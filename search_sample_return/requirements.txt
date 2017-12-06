@@ -1,0 +1,32 @@
+numpy
+sympy
+matplotlib
+jupyter
+############################################################################
+# nb_conda # jupyter notebook extension? not installed                     #
+# opencv3 # use import cv2, compiled version of openvc3                    #
+############################################################################
+pillow
+scikit-learn
+scikit-image
+scipy
+h5py
+eventlet
+flask-socketio
+seaborn
+pandas
+############################################################################
+# ffmpeg                                                                   #
+############################################################################
+ffmpeg-python
+imageio==2.1.2
+moviepy
+############################################################################
+# tensorflow==1.2.1                                                        #
+############################################################################
+tensorflow
+tensorflow-gpu
+socketIO-client
+transforms3d
+pyqtgraph
+PyQt5
