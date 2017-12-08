@@ -199,11 +199,9 @@ def perception_step(Rover):
         #          Rover.worldmap[navigable_y_world, navigable_x_world, 2] += 1
 
     Rover.worldmap[obstacle_world_y, obstacle_world_x, 0] += 1
-    Rover.worldmap[rock_world_y, rock_world_x, 1] += 1
     Rover.worldmap[navi_world_y, navi_world_x, 2] += 1
     Rover.worldmap[navi_world_y, navi_world_x, 0] = 0
-
-    print('shape:' + str(navi_world_x.shape))
+    Rover.worldmap[rock_world_y, rock_world_x, 1] += 1
 
     # xStatic = np.arange(int(xpos), int(xpos) + 5)
     # yStatic = np.arange(int(ypos), int(ypos) + 5)
@@ -218,6 +216,7 @@ def perception_step(Rover):
         # Rover.nav_dists = rover_centric_pixel_distances
         # Rover.nav_angles = rover_centric_angles
     Rover.nav_dists, Rover.nav_angles = to_polar_coords(navi_rover_x, navi_rover_y)
+    Rover.rock_dists, Rover.rock_angles = to_polar_coords(rock_rover_x, rock_rover_y)
     
  
     
