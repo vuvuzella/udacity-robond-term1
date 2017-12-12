@@ -14,6 +14,11 @@ def decision_step(Rover):
 
     MarsRoverSM.run(Rover)
 
+    print("Rover.brake: " + str(Rover.brake))
+    print("Rover.rock_angles: " + str(np.mean(Rover.rock_angles)))
+    print("Rover.rock_dists: " + str(np.mean(Rover.rock_dists)))
+    print("Rover.near_sample: " + str(Rover.near_sample))
+
     # Example:
     # Check if we have vision data to make decisions with
     # if Rover.nav_angles is not None:

@@ -79,7 +79,7 @@ class RoverState():
         self.send_pickup = False # Set to True to trigger rock pickup
 
         self.rock_detect_thresh = 30  # threshold for detecting presence of sample rocks 
-        self.rock_dist_thresh = 20  # threshold for distance of rock sample
+        self.rock_dist_thresh = 25  # threshold for distance of rock sample
         self.rock_dists = None # distances of navigable terrain pixels
         self.rock_angles = [] # angles of rock samples if detected
 
@@ -107,7 +107,7 @@ def telemetry(sid, data):
         fps = frame_counter
         frame_counter = 0
         second_counter = time.time()
-    print("Current FPS: {}".format(fps))
+    # print("Current FPS: {}".format(fps))
 
     if data:
         global Rover

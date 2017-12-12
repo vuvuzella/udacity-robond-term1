@@ -28,7 +28,7 @@ def update_rover(Rover, data):
             if np.isfinite(tot_time):
                   Rover.total_time = tot_time
       # Print out the fields in the telemetry data dictionary
-      print(data.keys())
+      # print(data.keys())
       # The current speed of the rover in m/s
       Rover.vel = convert_to_float(data["speed"])
       # The current position of the rover
@@ -50,11 +50,11 @@ def update_rover(Rover, data):
       # Update number of rocks collected
       Rover.samples_collected = Rover.samples_to_find - np.int(data["sample_count"])
 
-      print('speed =',Rover.vel, 'position =', Rover.pos, 'throttle =', 
-      Rover.throttle, 'steer_angle =', Rover.steer, 'near_sample:', Rover.near_sample, 
-      'picking_up:', data["picking_up"], 'sending pickup:', Rover.send_pickup, 
-      'total time:', Rover.total_time, 'samples remaining:', data["sample_count"], 
-      'samples collected:', Rover.samples_collected)
+      # print('speed =',Rover.vel, 'position =', Rover.pos, 'throttle =', 
+      # Rover.throttle, 'steer_angle =', Rover.steer, 'near_sample:', Rover.near_sample, 
+      # 'picking_up:', data["picking_up"], 'sending pickup:', Rover.send_pickup, 
+      # 'total time:', Rover.total_time, 'samples remaining:', data["sample_count"], 
+      # 'samples collected:', Rover.samples_collected)
       # Get the current image from the center camera of the rover
       imgString = data["image"]
       image = Image.open(BytesIO(base64.b64decode(imgString)))
