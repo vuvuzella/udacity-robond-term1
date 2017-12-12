@@ -83,7 +83,14 @@ class RoverState():
         self.rock_dists = None # distances of navigable terrain pixels
         self.rock_angles = [] # angles of rock samples if detected
 
+        self.scanStart = False
+        self.scanLeft = False
+        self.scanRight = False
+        self.scanOriginal = False
+        self.scanOriginalAngle = 0
         self.scanStartAngle = 0
+        self.scanAngleDiff = 0
+        self.scanDestAngle = 0
 
 # Initialize our rover 
 Rover = RoverState()
@@ -107,7 +114,7 @@ def telemetry(sid, data):
         fps = frame_counter
         frame_counter = 0
         second_counter = time.time()
-    print("Current FPS: {}".format(fps))
+    # print("Current FPS: {}".format(fps))
 
     if data:
         global Rover

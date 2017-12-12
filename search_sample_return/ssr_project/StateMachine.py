@@ -97,33 +97,273 @@ class RockStopState(State):
             if prevState is RockScanState:
                 return Rover.stop
             else:
-                if len(Rover.rock_angles) > Rover.rock_detect_thresh:
-                    return RoverSM.rockRotate
+                # if len(Rover.rock_angles) > Rover.rock_detect_thresh:
+                #     return RoverSM.rockRotate
+                # else:
+                if isinstance(prevState, RockForwardState):
+                    return RoverSM.rockPick
                 else:
-                    return RoverSM.rockScan
+                    return RoverSM.rockScanLeft
+
+class RockScanLeftState(State):
+    def run(self, Rover):
+        print("RockScanLeft")
+        if Rover.scanStart == False:
+            Rover.scanStart = True
+            Rover.scanOriginalAngle = Rover.yaw
+            # scan left
+            # if Rover.scanOriginalAngle > 270:
+            #     Rover.scanDestAngle = 360 - (Rover.scanOriginalAngle + 90)
+            # else:
+            #     Rover.scanDestAngle = Rover.scanOriginalAngle + 90
+            tempLeftDest = Rover.scanOriginalAngle + 90
+            # if tempLeftDestLef > 360:
+            #     Rover.scanDestAngle = 360 - (Rover.scanOriginalAngle + 90)
+            # else:
+            Rover.scanDestAngle = tempLeftDest
+
+        Rover.steer = 15
+        Rover.throttle = 0
+        Rover.brake = 0
+
+        print("scanOriginalAngle: " + str(Rover.scanOriginalAngle))
+        print("scanDestAngle: " + str(Rover.scanDestAngle))
+        print("Rover.yaw: " + str(Rover.yaw))
+
+    def next(self, prevState, Rover):
+        if Rover.scanDestAngle > 360:
+            if Rover.yaw < 90:
+                if Rover.yaw >= (Rover.scanDestAngle - 360):
+                    Rover.rockScanLeft = True
+                    Rover.scanStart = False
+                    return RoverSM.rockScanCenter
+                else:
+                    return RoverSM.rockScanLeft
+            else:
+                if Rover.yaw >= Rover.scanDestAngle:
+                    print("This should not print!!!!!!!!!!!!!!!!!!!!!!!!1")
+                    Rover.rockScanLeft = True
+                    Rover.scanStart = False
+                    return RoverSM.rockScanCenter
+                else:
+                    return RoverSM.rockScanLeft
+        else:
+            if Rover.yaw >= Rover.scanDestAngle:
+                Rover.rockScanLeft = True
+                Rover.scanStart = False
+                return RoverSM.rockScanCenter
+            else:
+                return RoverSM.rockScanLeft
+
+class RockScanRightState(State):
+    def run(self, Rover):
+        print("RockScanRight")
+        if Rover.scanStart == False:
+            Rover.scanStart = True
+            Rover.scanOriginalAngle = Rover.yaw
+            # scan right
+            # if Rover.scanOriginalAngle < 90:
+            #     Rover.scanDestAngle = 360 - np.abs(Rover.scanOriginalAngle - 90)
+            # else:
+            #     Rover.scanDestAngle = Rover.scanOriginalAngle + 90
+            tempRightDest = Rover.scanOriginalAngle - 90
+            # if tempRightDest < 0:
+            #     Rover.scanDestAngle = 360 - np.abs(tempRightDest)
+            # else:
+            Rover.scanDestAngle = tempRightDest
+
+        Rover.steer = -15
+        Rover.throttle = 0
+        Rover.brake = 0
+
+        print("scanOriginalAngle: " + str(Rover.scanOriginalAngle))
+        print("scanDestAngle: " + str(Rover.scanDestAngle))
+        print("Rover.yaw: " + str(Rover.yaw))
+
+    def next(self, prevState, Rover):
+        if Rover.scanDestAngle < 0:
+            if Rover.yaw > 270:
+                if Rover.yaw < (360 - Rover.scanDestAngle):
+                    return RoverSM.rockScanRight
+                else:
+                    Rover.rockScanRight = True
+                    Rover.scanStart = False
+                    return RoverSM.rockScanCenter
+            else:
+                return RoverSM.rockScanRight
+        else:
+            if Rover.yaw < Rover.scanDestAngle:
+                return RoverSM.rockScanRight
+            else:
+                Rover.rockScanRight = True
+                Rover.scanStart = False
+                return RoverSM.rockScanCenter
+
+class RockScanCenterState(State):
+    def run(self, Rover):
+        print("RockScanCenter")
+        if Rover.scanStart == False:
+            Rover.scanStart = True
+            # Rover.scanOriginalAngle = Rover.yaw
+            # scan center
+            Rover.scanDestAngle = Rover.scanOriginalAngle
+
+        if Rover.scanLeft == True:
+            Rover.steer = -15
+        else:
+            Rover.steer = 15
+        Rover.throttle = 0
+        Rover.brake = 0
+
+        print("scanOriginalAngle: " + str(Rover.scanOriginalAngle))
+        print("scanDestAngle: " + str(Rover.scanDestAngle))
+        print("Rover.yaw: " + str(Rover.yaw))
+
+    def next(self, prevState, Rover):
+        if Rover.scanLeft == True:
+            if Rover.scanDestAngle > 270:
+                if Rover.yaw >= Rover.scanOriginalAngle:
+                    # finished
+                    Rover.scanLeft = False
+                else:
+                    return RoverSM.rockScanCenter
+            else:
+                if Rover.yaw < Rover.scanOriginalAngle:
+                    return RoverSM.rockScanRight
+                else:
+                    return RoverSM.rockScanCenter
+        else:
+            if Rover.scanDestAngle < 90:
+                if Rover.yaw < Rover.scanDestAngle:
+                    # finished
+                    Rover.scanRight = False
+                else:
+                    return RoverSM.rockScanCenter
+            else:
+                if Rover.yaw > Rover.scanOriginalAngle:
+                    return RoverSM.stop
+                else:
+                    return RoverSM.rockScanCenter
 
 class RockScanState(State):
     def run(self, Rover):
         print("RockScan")
-        if len(Rover.rock_angles) <= Rover.rock_detect_thresh:
-            Rover.steer = -15   # steer left by default
-            Rover.throttle = 0
-            Rover.brake = 0
 
-        Rover.scanStartAngle += Rover.yaw - Rover.scanStartAngle
+        # if Rover.scanStart == False:
+        #     Rover.scanStart = True
+        #     Rover.scanStartAngle = Rover.yaw
+        #     Rover.scanOriginalAngle = Rover.yaw
+        #     Rover.scanAngleDiff = 0
+
+        # Rover.throttle = 0
+        # Rover.brake = 0
+
+        # ssAngle = 0
+        # yawAngle = 0
+
+        # if Rover.scanLeft == False:
+        #     # scan left
+        #     print("Scanning Left")
+        #     Rover.steer = 15    # steer left
+        #     if Rover.scanAngleDiff >= (90):
+        #         # scanning left is done
+        #         Rover.scanLeft = True
+        #         Rover.scanAngleDiff = 0
+        #         Rover.scanStartAngle = Rover.yaw
+        #     else:
+        #         if Rover.scanOriginalAngle >= 270:
+        #             if Rover.yaw >= 270:
+        #                 yawAngle = 360 - Rover.yaw
+        #             else:
+        #                 yawAngle = Rover.yaw
+        #             ssAngle = 360 - Rover.scanStartAngle
+        #         else:
+        #             yawAngle = Rover.yaw
+        #             ssAngle = Rover.scanStartAngle
+
+        # elif Rover.scanRight == False:
+        #     # scan right
+        #     print("Scanning Right")
+        #     Rover.steer = -15    # steer right
+        #     if Rover.scanAngleDiff >= (180):
+        #         Rover.scanRight = True
+        #         Rover.scanAngleDiff = 0
+        #         Rover.scanStartAngle = Rover.yaw
+        #     else:
+        #         ssAngle = Rover.scanStartAngle
+        #         if Rover.scanOriginalAngle <= 90:
+        #             if Rover.yaw > 270:
+        #                 yawAngle = 360 - Rover.yaw
+        #             else:
+        #                 yawAngle = Rover.yaw
+        #         else:
+        #             yawAngle = Rover.yaw
+        # else:
+        #     # return to original
+        #     Rover.steer = 15
+        #     print("Going back to original")
+        #     if Rover.scanAngleDiff >= (90):
+        #         Rover.scanOriginal = True
+        #         Rover.scanAngleDiff = 0
+        #     else:
+        #         # ssAngle = Rover.scanStartAngle
+        #         if Rover.yaw >= 270:
+        #             yawAngle = 360 - Rover.yaw
+        #         if Rover.scanOriginalAngle <= 90:
+        #             # if Rover.yaw >= 270:
+        #             #     yawAngle = 360 - Rover.yaw
+        #             # else:
+        #             #     yawAngle = Rover.yaw
+        #             ssAngle = 360 - Rover.scanStartAngle 
+        #         else:
+        #             # yawAngle = Rover.yaw
+        #             ssAngle = Rover.scanStartAngle
+
+        # if Rover.scanOriginalAngle <= 90:
+        #     if Rover.yaw >= 270:
+        #         Rover.scanAngleDiff = np.abs(yawAngle + ssAngle)
+        #     else:
+        #         Rover.scanAngleDiff = np.abs(yawAngle - ssAngle)
+        # elif Rover.scanOriginalAngle >= 270:
+        #     if Rover.yaw <= 90:
+        #         Rover.scanAngleDiff = np.abs(yawAngle - ssAngle)
+        #     else:
+        #         Rover.scanAngleDiff = np.abs(yawAngle + ssAngle)
+        # else:
+        #     # scanOriginalAngle is in 2nd or third quadrant
+        #     # calculate as is
+        #     Rover.scanAngleDiff = np.abs(yawAngle - ssAngle)
+
+        # print("Rover.yaw: " + str(Rover.yaw))
+        # print("Rover.scanOriginalAngle: " + str(Rover.scanOriginalAngle))
+        # print("Rover.scanStartAngle: " + str(Rover.scanStartAngle))
+        # print("ssAngle: " + str(ssAngle))
+        # print("yawAngle: " + str(yawAngle))
+        # print("Rover.scanAngleDiff: " + str(Rover.scanAngleDiff))
+
 
     def next(self, prevState, Rover):
-        if isinstance(prevState, RockScanState):
-            print(Rover.scanStartAngle)
-        if isinstance(prevState, RockScanState) \
-            and (Rover.scanStartAngle > 5):
-            return RoverSM.rockScan
-        else:
-            Rover.scanStartAngle = 0
-            if len(Rover.rock_angles) > Rover.rock_detect_thresh:
-                return RoverSM.rockRotate
-            else:
-                return RoverSM.stop
+        pass
+        # if len(Rover.rock_angles) > Rover.rock_detect_thresh \
+        #     and (np.mean(Rover.rock_angles) < 0.3) \
+        #     and (np.mean(Rover.rock_angles) > -0.3):
+        #     Rover.scanStart = False
+        #     Rover.scanLeft = False
+        #     Rover.scanRight = False
+        #     Rover.scanOriginal = False
+        #     return RoverSM.rockForward
+        # else:
+        # if Rover.scanRight == True \
+        #     and Rover.scanLeft == True \
+        #     and Rover.scanOriginal == True:
+        #     Rover.scanStart = False
+        #     Rover.scanLeft = False
+        #     Rover.scanRight = False
+        #     Rover.scanOriginal = False
+        #     return RoverSM.stop
+        # else:
+        #     return RoverSM.rockScan
+
 
 class RockRotateState(State):
     def run(self, Rover):
@@ -168,11 +408,15 @@ class RockPickState(State):
         Rover.send_pickup = True
     
     def next(self, prevState, Rover):
-        if len(Rover.rock_angles) > Rover.rock_detect_thresh:
-            return RoverSM.rockForward
-        return RoverSM.stop
-
-
+        if isinstance(prevState, RockPickState):
+            if Rover.picking_up == 1:
+                return RoverSM.rockPick
+            else:
+                if len(Rover.rock_angles) > Rover.rock_detect_thresh:
+                    return RoverSM.rockForward
+                else:
+                    return RoverSM.stop
+        return RoverSM.rockPick
 
 class RoverSM(StateMachine):
     def __init__(self):
@@ -187,3 +431,7 @@ RoverSM.rockScan = RockScanState()
 RoverSM.rockRotate = RockRotateState()
 RoverSM.rockStop = RockStopState()
 RoverSM.rockPick = RockPickState()
+
+RoverSM.rockScanLeft = RockScanLeftState()
+RoverSM.rockScanRight = RockScanLeftState()
+RoverSM.rockScanCenter = RockScanCenterState()
