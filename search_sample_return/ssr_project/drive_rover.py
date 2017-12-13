@@ -61,7 +61,7 @@ class RoverState():
         # get creative in adding new fields or modifying these!
         self.stop_forward = 500 # Threshold to initiate stopping
         self.go_forward = 800 # Threshold to go forward again
-        self.max_vel = 3 # Maximum velocity (meters/second)
+        self.max_vel = 2.5 # Maximum velocity (meters/second)
         # Image output from perception step
         # Update this image to display your intermediate analysis steps
         # on screen in autonomous mode
@@ -81,9 +81,9 @@ class RoverState():
         self.rock_detect_thresh = 50  # threshold for detecting presence of sample rocks 
         self.rock_dist_thresh = 25  # threshold for distance of rock sample
         self.rock_dists = None # distances of navigable terrain pixels
-        self.rock_angles = [] # angles of rock samples if detected
+        self.rock_angles = np.empty((0, )) # angles of rock samples if detected
 
-        self.rock_last_seen = []
+        self.rock_last_seen = np.empty((0, ))
         self.rock_dest_angle = 0 # added normalized angle
         self.rock_origin = 0
 
@@ -112,7 +112,7 @@ def telemetry(sid, data):
         fps = frame_counter
         frame_counter = 0
         second_counter = time.time()
-    # print("Current FPS: {}".format(fps))
+    print("Current FPS: {}".format(fps))
 
     if data:
         global Rover

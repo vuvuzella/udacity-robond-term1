@@ -197,10 +197,20 @@ def perception_step(Rover):
         # Example: Rover.worldmap[obstacle_y_world, obstacle_x_world, 0] += 1
         #          Rover.worldmap[rock_y_world, rock_x_world, 1] += 1
         #          Rover.worldmap[navigable_y_world, navigable_x_world, 2] += 1
-
-    Rover.worldmap[obstacle_world_y, obstacle_world_x, 0] += 1
-    Rover.worldmap[navi_world_y, navi_world_x, 2] += 1
-    Rover.worldmap[navi_world_y, navi_world_x, 0] = 0
+    if Rover.roll > 270:
+        roll = 360 - Rover.roll
+    else:
+        roll = Rover.roll
+    if Rover.pitch > 270:
+        pitch = 360 - Rover.pitch
+    else:
+        pitch = Rover.pitch
+    print("Pitch: " + str(pitch))
+    print("Roll: " + str(roll))
+    if roll < 1.5 and pitch < 1.5:
+        Rover.worldmap[obstacle_world_y, obstacle_world_x, 0] += 1
+        Rover.worldmap[navi_world_y, navi_world_x, 2] += 1
+        Rover.worldmap[navi_world_y, navi_world_x, 0] = 0
     Rover.worldmap[rock_world_y, rock_world_x, 1] += 1
 
     # xStatic = np.arange(int(xpos), int(xpos) + 5)
