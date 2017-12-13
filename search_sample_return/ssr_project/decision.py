@@ -1,6 +1,7 @@
 import numpy as np
 
 from StateMachine import *
+from perception import to_polar_coords
 
 MarsRoverSM = RoverSM()
 
@@ -14,10 +15,17 @@ def decision_step(Rover):
 
     MarsRoverSM.run(Rover)
 
-    print("Rover.brake: " + str(Rover.brake))
-    print("Rover.rock_angles: " + str(np.mean(Rover.rock_angles)))
-    print("Rover.rock_dists: " + str(np.mean(Rover.rock_dists)))
-    print("Rover.near_sample: " + str(Rover.near_sample))
+    # print("Rover.brake: " + str(Rover.brake))
+    # print("Rover.rock_angles: " + str(np.mean(Rover.rock_angles)))
+    # print("Rover.rock_dists: " + str(np.mean(Rover.rock_dists)))
+    # print("Rover.near_sample: " + str(Rover.near_sample))
+    print("Rover.yaw: " + str(Rover.yaw))
+    print("Normalized: " + str(np.mean(Rover.rock_angles * 180/np.pi)))
+    print("Rover.rock_origin: " + str(Rover.rock_origin))
+    print("Rover.rock_dest_angle: " + str(Rover.rock_dest_angle))
+    # print("Rover.rock_x: " + str(Rover.rock_x))
+    # print("Rover.rock_y: " + str(Rover.rock_y))
+    print("Rock to polar coords: " + str(np.mean(Rover.rock_last_seen )))
 
     # Example:
     # Check if we have vision data to make decisions with
