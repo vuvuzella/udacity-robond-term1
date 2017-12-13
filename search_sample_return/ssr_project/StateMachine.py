@@ -68,6 +68,14 @@ class ForwardState(State):
             Rover.brake = 0
 
     def next(self, prevState, Rover):
+        if Rover.throttle > 0 and Rover.brake == 0 and Rover.vel < 0.3 and Rover.vel > -0.3:
+            Rover.stuck_counter += 1
+            if Rover.stuck_counter > Rover.stuck_thresh:
+                Rover.stuck_counter = 0
+                return RoverSM.unstuck
+        else:
+            Rover.stuck_counter = 0
+
         if len(Rover.rock_angles) > Rover.rock_detect_thresh \
             or np.mean(Rover.rock_dists) > 0:
             return RoverSM.rockStop
@@ -75,6 +83,13 @@ class ForwardState(State):
             return RoverSM.forward
         else:
             return RoverSM.stop
+
+class UnstuckState(State):
+    def run(self, Rover):
+        print("Im stuck! trying to unstuck")
+
+    def next(self, prevState, Rover):
+            return RoverSM.rotateLeft
 
 class RotateLeftState(State):
     def run(self, Rover):
@@ -133,31 +148,6 @@ class RockRotateState(State):
         else:
             Rover.steer = 15
 
-        # destAngle = Rover.rock_origin + np.mean(Rover.rock_last_seen * 180 / np.pi)
-        # if destAngle < 0:
-        #     destAngle = 360 + destAngle
-        # elif destAngle > 360:
-        #     destAngle = destAngle - 360
-        # else:
-        #     pass
-
-        # calculate thoe current angle and the destination angle
-        # if len(Rover.rock_angles) > 0:
-        #     Rover.rock_last_seen = Rover.rock_angles
-        # if np.mean(Rover.rock_last_seen) < 0:
-        #     if np.abs(Rover.yaw - destAngle) < 20:
-        #         Rover.steer = np.clip(Rover.steer + 0.5, -15, 0)
-        #     else:
-        #         Rover.steer = np.clip(Rover.steer - 0.5, -15, 15)
-        # else:
-        #     if np.abs(Rover.yaw - destAngle) < 20:
-        #         Rover.steer = np.clip(Rover.steer - 0.5, 0, 15)
-        #     else:
-        #         Rover.steer = np.clip(Rover.steer + 0.5, -15, 15)
-        #     # Rover.steer = np.clip(Rover.steer + 15, -15, 15)
-        #     # Rover.steer = 15
-        # Rover.steer = 0
-
     def next(self, prevState, Rover):
         destAngle = Rover.rock_origin + np.mean(Rover.rock_last_seen * 180 / np.pi)
         if destAngle < 0:
@@ -193,7 +183,16 @@ class RockForwardState(State):
             Rover.steer = 0
         # Rover.brake = 0
 
+
     def next(self, prevState, Rover):
+        if Rover.throttle > 0 and Rover.brake == 0 and Rover.vel < 0.3 and Rover.vel > -0.3:
+            Rover.stuck_counter += 1
+            if Rover.stuck_counter > Rover.stuck_thresh:
+                Rover.stuck_counter = 0
+                return RoverSM.unstuck
+        else:
+            Rover.stuck_counter = 0
+
         if Rover.near_sample == 1:
             return RoverSM.rockPick
         return RoverSM.rockForward
@@ -232,3 +231,5 @@ RoverSM.rockForward = RockForwardState()
 RoverSM.rockRotate = RockRotateState()
 RoverSM.rockStop = RockStopState()
 RoverSM.rockPick = RockPickState()
+
+RoverSM.unstuck = UnstuckState()

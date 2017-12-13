@@ -90,6 +90,9 @@ class RoverState():
         self.rock_x = np.empty((0,))
         self.rock_y = np.empty((0,))
 
+        self.stuck_counter = 0
+        self.stuck_thresh = 30
+
 # Initialize our rover 
 Rover = RoverState()
 
