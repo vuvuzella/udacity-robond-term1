@@ -40,7 +40,7 @@ class StopState(State):
                 return RoverSM.stop
             if len(Rover.nav_angles) >= Rover.go_forward:
                 return RoverSM.forward
-            return RoverSM.rotateLeft
+            return RoverSM.rotate
 
 class ForwardState(State):
     def run(self, Rover):
@@ -77,10 +77,15 @@ class ForwardState(State):
             Rover.stuck_counter = 0
 
         if len(Rover.rock_angles) > Rover.rock_detect_thresh \
-            or np.mean(Rover.rock_dists) > 0:
+            or np.mean(Rover.rock_dists) > 20:
+            # if len(Rover.rock_angles) > 0:
+            Rover.rock_last_seen = Rover.rock_angles
             return RoverSM.rockStop
         elif len(Rover.nav_angles) >= Rover.stop_forward:
-            return RoverSM.forward
+            if np.mean(Rover.nav_angles) > 1 or np.mean(Rover.nav_angles) < -1:
+                return RoverSM.rotate
+            else:
+                return RoverSM.forward
         else:
             return RoverSM.stop
 
@@ -89,24 +94,37 @@ class UnstuckState(State):
         print("Im stuck! trying to unstuck")
 
     def next(self, prevState, Rover):
-            return RoverSM.rotateLeft
+            return RoverSM.rotate
 
-class RotateLeftState(State):
+class RotateState(State):
     def run(self, Rover):
-        print("Rotate Left")
+        print("Rotate")
         Rover.brake = 0
         Rover.throttle = 0
-        Rover.steer = -15
-
+        # Rover.steer = -15
+        if len(Rover.nav_angles) > Rover.go_forward:
+            if np.mean(Rover.nav_angles) < 0:
+                print("Going Right from nav_angles!")
+                Rover.steer = -15
+            else:
+                print("Going Left from nav_angles!")
+                Rover.steer = 15
+        else:
+            if np.mean(Rover.nav_last_angle_seen) < 0:
+                print("Going Right from angle_last_seen!")
+                Rover.steer = -15
+            else:
+                print("Going Left from angle_last_seen!")
+                Rover.steer = 15
 
     def next(self, prevState, Rover):
         if (len(Rover.nav_angles) >= Rover.stop_forward):
             if (np.mean(Rover.nav_angles) < 0.3) and \
                 (np.mean(Rover.nav_angles) > -0.3):
                return RoverSM.forward
-            return RoverSM.rotateLeft
+            return RoverSM.rotate
         else:
-            return RoverSM.rotateLeft
+            return RoverSM.rotate
 
 class RockStopState(State):
     def run(self, Rover):
@@ -125,8 +143,6 @@ class RockStopState(State):
             Rover.steer = 0
         Rover.rock_origin = Rover.yaw
 
-        if len(Rover.rock_angles) > 0:
-            Rover.rock_last_seen = Rover.rock_angles
 
     def next(self, prevState, Rover):
         if (Rover.vel > 0.2 \
@@ -157,7 +173,7 @@ class RockRotateState(State):
         else:
             pass
         print("destAngle: " + str(destAngle))
-        if np.abs(Rover.yaw - destAngle) < 10:
+        if np.abs(Rover.yaw - destAngle) < 5:
             return RoverSM.rockForward
         return RoverSM.rockRotate
 
@@ -225,7 +241,7 @@ class RoverSM(StateMachine):
 
 RoverSM.stop = StopState()
 RoverSM.forward = ForwardState()
-RoverSM.rotateLeft = RotateLeftState()
+RoverSM.rotate = RotateState()
 
 RoverSM.rockForward = RockForwardState()
 RoverSM.rockRotate = RockRotateState()

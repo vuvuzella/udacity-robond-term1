@@ -228,7 +228,8 @@ def perception_step(Rover):
     Rover.nav_dists, Rover.nav_angles = to_polar_coords(navi_rover_x, navi_rover_y)
     Rover.rock_dists, Rover.rock_angles = to_polar_coords(rock_rover_x, rock_rover_y)
     
- 
+    if len(Rover.nav_angles) > Rover.go_forward:
+        Rover.nav_last_angle_seen = Rover.nav_angles
     
     
     return Rover

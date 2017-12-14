@@ -93,6 +93,8 @@ class RoverState():
         self.stuck_counter = 0
         self.stuck_thresh = 30
 
+        self.nav_last_angle_seen = np.empty((0,))
+
 # Initialize our rover 
 Rover = RoverState()
 
