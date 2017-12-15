@@ -6,6 +6,12 @@ class State:
     def next (self, inputs):
         assert 0, "next not implemented"
 
+    def getAngleFromZero(self, theta=0):
+        if theta >= 270:
+            return 360 - theta
+        else:
+            return theta
+
 class StateMachine:
     def __init__(self, initialState, inputs=None):
         self.currentState = initialState
@@ -26,14 +32,21 @@ class StopState(State):
             # Rover.throttle = 0
             # Rover.brake = Rover.brake_set
             Rover.throttle = np.clip(Rover.throttle - Rover.throttle_set, 0, 1)
-            Rover.brake = np.clip(Rover.brake + 0.2, 0, 10)
+            Rover.brake = np.clip(Rover.brake + 0.5, 0, 10)
             Rover.steer = 0
 
     def next(self, prevState, Rover):
-        if (Rover.vel > 0.2 \
+        if Rover.stopped_incline == True:
+            # and isinstance(prevState, RockPickState):
+            if Rover.picking_up == 1:
+                return RoverSM.stop
+            else:
+                Rover.stopped_incline = False
+                return RoverSM.rotate
+        elif (Rover.vel > 0.1 \
             or Rover.vel < -0.1) \
-            and (Rover.pitch != 0) \
-            and (Rover.roll != 0): # arbitrary stopping threshold
+            or (self.getAngleFromZero(Rover.pitch) > 1) \
+            or (self.getAngleFromZero(Rover.roll) > 1): # arbitrary stopping threshold
             return RoverSM.stop
         else:
             if Rover.picking_up > 0:
@@ -68,7 +81,10 @@ class ForwardState(State):
             Rover.brake = 0
 
     def next(self, prevState, Rover):
-        if Rover.throttle > 0 and Rover.brake == 0 and Rover.vel < 0.3 and Rover.vel > -0.3:
+        if Rover.throttle > 0 \
+            and Rover.brake == 0 \
+            and Rover.vel < 0.3 \
+            and Rover.vel > -0.3:
             Rover.stuck_counter += 1
             if Rover.stuck_counter > Rover.stuck_thresh:
                 Rover.stuck_counter = 0
@@ -77,8 +93,7 @@ class ForwardState(State):
             Rover.stuck_counter = 0
 
         if len(Rover.rock_angles) > Rover.rock_detect_thresh \
-            or np.mean(Rover.rock_dists) > 20:
-            # if len(Rover.rock_angles) > 0:
+            or np.mean(Rover.rock_dists) < 80:
             Rover.rock_last_seen = Rover.rock_angles
             return RoverSM.rockStop
         elif len(Rover.nav_angles) >= Rover.stop_forward:
@@ -160,9 +175,9 @@ class RockRotateState(State):
         Rover.throttle = 0
 
         if np.mean(Rover.rock_last_seen) < 0:
-            Rover.steer = -15
+            Rover.steer = -10
         else:
-            Rover.steer = 15
+            Rover.steer = 10
 
     def next(self, prevState, Rover):
         destAngle = Rover.rock_origin + np.mean(Rover.rock_last_seen * 180 / np.pi)
@@ -173,7 +188,7 @@ class RockRotateState(State):
         else:
             pass
         print("destAngle: " + str(destAngle))
-        if np.abs(Rover.yaw - destAngle) < 5:
+        if np.abs(Rover.yaw - destAngle) < 4:
             return RoverSM.rockForward
         return RoverSM.rockRotate
 
@@ -218,11 +233,13 @@ class RockPickState(State):
         print("RockPick")
         Rover.brake = 0
         Rover.throttle = 0
+        print("Rover.roll: " + str(self.getAngleFromZero(Rover.roll)))
+        print("Rover.pitch: " + str(self.getAngleFromZero(Rover.pitch)))
         if Rover.picking_up == 0:
             Rover.send_pickup = True
-        
-        print("send_pickup: " + str(Rover.send_pickup))
-        print("picking_up: " + str(Rover.picking_up))
+            if self.getAngleFromZero(Rover.pitch) > 1 \
+                or self.getAngleFromZero(Rover.roll) > 1:
+                Rover.stopped_incline = True
     
     def next(self, prevState, Rover):
         if Rover.send_pickup == True:

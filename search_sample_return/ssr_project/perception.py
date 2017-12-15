@@ -205,8 +205,6 @@ def perception_step(Rover):
         pitch = 360 - Rover.pitch
     else:
         pitch = Rover.pitch
-    print("Pitch: " + str(pitch))
-    print("Roll: " + str(roll))
     if roll < 1 and pitch < 1:
         Rover.worldmap[obstacle_world_y, obstacle_world_x, 0] += 1
         Rover.worldmap[navi_world_y, navi_world_x, 2] += 1
