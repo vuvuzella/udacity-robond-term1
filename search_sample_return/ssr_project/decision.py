@@ -16,19 +16,23 @@ def decision_step(Rover):
     MarsRoverSM.run(Rover)
 
     # print("Rover.brake: " + str(Rover.brake))
-    # print("Rover.rock_angles: " + str(np.mean(Rover.rock_angles)))
+    #print("Rover.rock_angles: " + str(np.mean(Rover.rock_angles)))
+    print("Rover.rock_angles: " + str(len(Rover.rock_angles)))
     print("Rover.rock_dists: " + str(np.mean(Rover.rock_dists)))
     # print("Rover.near_sample: " + str(Rover.near_sample))
     # print("Rover.rock_angles Normalized: " + str(np.mean(Rover.rock_angles * 180/np.pi)))
-    print("Rover.yaw: " + str(Rover.yaw))
-    print("Rover.rock_origin: " + str(Rover.rock_origin))
+    # print("Rover.yaw: " + str(Rover.yaw))
+    # print("Rover.rock_origin: " + str(Rover.rock_origin))
     # print("Rover.rock_dest_angle: " + str(Rover.rock_dest_angle))
     # print("Rock to polar coords: " + str(np.mean(Rover.rock_last_seen )))
     # print("Rover.nav_angles: " + str(np.mean(Rover.nav_angles)))
     # print("Rover.nav_angles Normalized: " + str(np.mean(Rover.nav_angles * 180/np.pi)))
     # print("Rover.nav_angles negative: " + str(np.mean(Rover.nav_angles * -180/np.pi)))
     # print("Rover.stuck_counter: " + str(Rover.stuck_counter))
-    # print("Rover.stopped_incline: " + str(Rover.stopped_incline))
+    
+    print("Rover.roll" + str(Rover.roll))
+    print("Rover.pitch" + str(Rover.pitch))
+    print("Rover.stopped_incline: " + str(Rover.stopped_incline))
 
     # Example:
     # Check if we have vision data to make decisions with

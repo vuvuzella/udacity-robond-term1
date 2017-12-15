@@ -78,8 +78,8 @@ class RoverState():
         self.picking_up = 0 # Will be set to telemetry value data["picking_up"]
         self.send_pickup = False # Set to True to trigger rock pickup
 
-        self.rock_detect_thresh = 30  # threshold for detecting presence of sample rocks 
-        self.rock_dist_thresh = 25  # threshold for distance of rock sample
+        self.rock_detect_thresh = 40 # threshold for detecting presence of sample rocks 
+        self.rock_dist_thresh = 40  # threshold for distance of rock sample
         self.rock_dists = None # distances of navigable terrain pixels
         self.rock_angles = np.empty((0, )) # angles of rock samples if detected
 
