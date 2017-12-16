@@ -113,19 +113,6 @@ def perception_step(Rover):
     # NOTE: camera image is coming to you in Rover.img
     img = Rover.img
     # 1) Define source and destination points for perspective transform
-    # source_ll = [12, 140]
-    # source_lr = [305, 140]
-    # source_ur = [200, 96]
-    # source_ul = [118, 96]
-
-    # dest_ll = [160, 155]
-    # dest_lr = [180, 155]
-    # dest_ur = [180, 135]
-    # dest_ul = [160, 135]
-
-    # # lower left, lower right, upper right, upper left
-    # source = np.float32([source_ll, source_lr, source_ur, source_ul])
-    # destination = np.float32([dest_ll, dest_lr, dest_ur, dest_ul])
 
     # Define calibration box in source (actual) and destination (desired) coordinates
     # These source and destination points are defined to warp the image
@@ -136,6 +123,7 @@ def perception_step(Rover):
     # is not the position of the rover but a bit in front of it
     # this is just a rough guess, feel free to change it!
     bottom_offset = 6
+
     source_lowerLeft = [14, 140]
     source_lowerRight = [301 ,140]
     source_upperRight = [200, 96]
@@ -162,11 +150,7 @@ def perception_step(Rover):
     # navi_thresh = color_thresh(img) * 255
     # navi_thresh = perspect_transform(navi_thresh, source, destination)
     navi_thresh = color_thresh(transform) * 255
-    rock_thresh = rock_color_thresh(img) * 255
-    rock_thresh = perspect_transform(rock_thresh, source, destination)
-    # obstacle_thresh = obstacle_color_thresh(img) * 255
-    # obstacle_thresh = perspect_transform(obstacle_thresh, source, destination)
-    # obstacle_thresh = obstacle_color_thresh(transform) * 255
+    rock_thresh = rock_color_thresh(transform) * 255
     black_mask = perspect_transform(np.ones_like(transform[:,:,0]), source, destination)
     obstacle_thresh = np.bitwise_xor(navi_thresh, black_mask) * 255
 
@@ -210,14 +194,6 @@ def perception_step(Rover):
         Rover.worldmap[navi_world_y, navi_world_x, 2] += 1
         Rover.worldmap[navi_world_y, navi_world_x, 0] = 0
     Rover.worldmap[rock_world_y, rock_world_x, 1] += 1
-
-    # xStatic = np.arange(int(xpos), int(xpos) + 5)
-    # yStatic = np.arange(int(ypos), int(ypos) + 5)
-    # print('xStatic: ' + str(xStatic))
-    # Rover.worldmap[xStatic, xStatic, 0] = 255
-    # Rover.worldmap[xStatic, xStatic, 1] = 255
-    # Rover.worldmap[xStatic, xStatic, 2] = 255
-
 
     # 8) Convert rover-centric pixel positions to polar coordinates
     # Update Rover pixel distances and angles

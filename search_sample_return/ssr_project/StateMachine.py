@@ -59,7 +59,7 @@ class StopState(State):
         else:
             if Rover.picking_up > 0:
                 return RoverSM.stop
-            if len(Rover.nav_angles) >= Rover.go_forward:   # TODO: rotate until nav_angles is close to zero
+            if len(Rover.nav_angles) >= Rover.go_forward:
                 return RoverSM.forward
             return RoverSM.rotate
 
