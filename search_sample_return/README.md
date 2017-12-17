@@ -5,13 +5,15 @@
 
 ### Notebook Analysis
 
+### [Rover Project Test Notebook Found Here](https://github.com/vuvuzella/udacity-robond-term1/blob/master/search_sample_return/Rover_Project_Test_Notebook.ipynb)
+
 #### 1. Describe (and identify where in your code) how you modified or added functions to add obstacle and rock sample identification
 
 The perspect_transform and color_threshold functions were primarily used to implement an image analysis system. 
 
 First, we need to calibrate the perspect_transform to get a desired warped image for analysis by choosing the coordinates that form a trapezoidal box, which when warped, will give a somewhat primitive top-down view of what the robot is seeing. 
 
-![source](../writeup_images/perspect_source.png)
+![source](./writeup_images/perspect_source.png)
 
 In the Perspective Transform section, the coordinates of the source box to be used in the perspect_transform function is in lines 22-25:
 ```
@@ -23,7 +25,7 @@ source_upperLeft = [118, 96]
 
 The destination coordinates were left unchanged as the chosen destination coordinates produces a good top-down image shown below.
 
-![destination](../writeup_images/perspect_dest.png)
+![destination](./writeup_images/perspect_dest.png)
 
 Second, we take the output of the perspect_transform function as input to the color_threshold function. The default values for the RGB used is 160,160,160, which were used to detect the navigable terrain.
 
@@ -68,7 +70,7 @@ plt.show()
 ```
 which then produces the images necessary for detecting rock samples:
 
-![Rock sample source, perspective transform and color threshold](../writeup_images/rock_source.png)
+![Rock sample source, perspective transform and color threshold](./writeup_images/rock_source.png)
 
 For the obstacles, a separate function is created that uses the original color_thresh function and technically get the negation of it.
 An XOR function was used to "negate" the output of color_thresh, in order to retain the black bounderies (the right triangles on the bottom)
@@ -87,7 +89,7 @@ def color_thresh_obstacles(img):
 ```
 The output of the color_thresh_obstacles function is as follows, with original, warped, color_thresh, color_thresh_obstacles outputs respectively:
 
-![Obstacle sample source, perspective transform and color threshold](../writeup_images/obstacles_source.png)
+![Obstacle sample source, perspective transform and color threshold](./writeup_images/obstacles_source.png)
 
 In the last picture, the white part are the obstacles detected fromn the original color_thresh output, which is second to the last image.
 
@@ -149,6 +151,9 @@ The output movie clip from the test notebook:
 alt="IMAGE ALT TEXT HERE" width="240" height="180" border="10" /></a>
 
 ### Autonomous Navigation and Mapping
+
+### [Search and Sample Return Scripts Found Here](https://github.com/vuvuzella/udacity-robond-term1/tree/master/search_sample_return/ssr_project)
+
 #### 1. perception_step and decision_step functions
 
 The perception step is somewhat similar to the jupyter notebook's process_image function. Basically the algorithm in the perception_step is:
