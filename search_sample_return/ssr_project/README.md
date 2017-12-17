@@ -258,8 +258,40 @@ Rotate state rotates the rover in complete stop, depending on where the last nav
 
 ##### 5. RockStopState
 
-This state is the entry state towards the rock rotate, approach and pick sequence. When the rover enters this state, it means it has seen a rock, even though the rock has become not visible in the current view inputs. Basically this state stops the rover, making sure all pitch and roll are at tolerable levels (lines 169-173). Its next possible states are RockRotateState or RockStopState
-
+This state is the entry state towards the rock rotate, approach and pick sequence. When the rover enters this state, it means it has seen a rock, even though the rock has become not visible in the current view inputs. Basically this state stops the rover, making sure all pitch and roll are at tolerable levels (lines 169-173). Its next possible states are RockRotateState or RockStopStatae. 
 ##### 6. RockRotateState
 
-The
+This handles rotating the rover when it has seen a rock sample. Lines 183-186 determines which way to rotate depending on the mean rover-centric angle that a rock was last seen. The destination angle is calculated by adding the starting yaw (the yaw where rock was last seen) and the rock's angle (lines 189-194). The rover keeps rotating until the difference between the current yaw and the destination angle is less than 4 (lines 197-199). The next possible states are RockForwardState or RockRotateState
+
+##### 7. RockForwardState
+
+This state handles the steering and velocity maintenance of the rover as it tries to approach the rock. Lines 204-211 maintains the velocity, and lines 213-219 handles steering changes depending on the mean rock angle if it is outside +0.1 and -0.1 range. This state also detects being stuck while approaching a rock (lines 225-231). When the rover is near a sample, it then goes to RockPickState. The next possible states are RockPickState, UnstuckState, or RockForwardState
+
+##### 8. RockPickState
+
+This state handles the picking of the rock after the rover approached it. This state also sets a flag to detect if it is picking up a rock on an inclined (pitch and roll greater than zero) (lines 246-248) so as to resume forward operation when it gets to StopState, distinguishing it from remaining at StopState while pitch and roll are greater than zero (lines 47-53). Next possible states are RockPickState or StopState
+
+In lines 261-263, A RoverSM class is defined, inheriting from StateMachine. Its StateMachine is then initialized with StopState as its default state.
+
+In lines 265 - 274, instances of each states are initialized as constant member variales of the RoverSM class.
+
+Finally, in decision.py, MarsRoverSM is an instance of RoverSM class (line 16), and in line 16, MarsRoverSM runs the State.run and State.next, using the Rover object as input
+
+#### Demonstration
+
+The result of the autonomous robot is:
+  * 6 Rock samples located
+  * 6 rock samples collected
+  * Fidelity no less than 60%
+  * more than 90% of the ground truth has been mapped
+
+Simulator settings:
+  * Screen Resolution: 1024 x 768
+  * Frames per second: avg: 10-14 (14fps without screen casting)
+  * Graphics Quality: Fastest
+
+Youtube Video 
+
+  <a href="http://www.youtube.com/watch?feature=player_embedded&v=aIpcEGg_O5Y
+" target="_blank"><img src="http://img.youtube.com/vi/aIpcEGg_O5Y/0.jpg" 
+alt="IMAGE ALT TEXT HERE" width="240" height="180" border="10" /></a>
