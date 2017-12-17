@@ -146,9 +146,7 @@ Finally, the output images of the color threshold functions are added to the out
 ```
 The output movie clip from the test notebook:
 
-  <a href="http://www.youtube.com/watch?feature=player_embedded&v=MTjhOVKIJcY
-" target="_blank"><img src="http://img.youtube.com/vi/MTjhOVKIJcY/0.jpg" 
-alt="IMAGE ALT TEXT HERE" width="240" height="180" border="10" /></a>
+[![IMAGE ALT TEXT HERE](http://img.youtube.com/vi/MTjhOVKIJcY/0.jpg)](http://www.youtube.com/watch?v=MTjhOVKIJcY)
 
 ### Autonomous Navigation and Mapping
 
@@ -279,6 +277,5 @@ Simulator settings:
 
 Youtube Video 
 
-  <a href="http://www.youtube.com/watch?feature=player_embedded&v=aIpcEGg_O5Y
-" target="_blank"><img src="http://img.youtube.com/vi/aIpcEGg_O5Y/0.jpg" 
-alt="IMAGE ALT TEXT HERE" width="240" height="180" border="10" /></a>
+[![IMAGE ALT TEXT HERE](http://img.youtube.com/vi/aIpcEGg_O5Y/0.jpg)](http://www.youtube.com/watch?v=aIpcEGg_O5Y)
+
