@@ -1,23 +1,6 @@
 ## Project: Search and Sample Return
 ---
 
-**The goals / steps of this project are the following:**  
-
-**Training / Calibration**  
-
-* Download the simulator and take data in "Training Mode"
-* Test out the functions in the Jupyter Notebook provided
-* Add functions to detect obstacles and samples of interest (golden rocks)
-
-**Autonomous Navigation / Mapping**
-
-* Fill in the `perception_step()` function within the `perception.py` script with the appropriate image processing functions to create a map and update `Rover()` data (similar to what you did with `process_image()` in the notebook). 
-* Fill in the `decision_step()` function within the `decision.py` script with conditional statements that take into consideration the outputs of the `perception_step()` in deciding how to issue throttle, brake and steering commands. 
-* Iterate on your perception and decision function until your rover does a reasonable (need to define metric) job of navigating and mapping.  
- 
- ---
-
-
 ## [Rubric](https://review.udacity.com/#!/rubrics/916/view) Points
 
 ### Notebook Analysis
@@ -28,7 +11,7 @@ The perspect_transform and color_threshold functions were primarily used to impl
 
 First, we need to calibrate the perspect_transform to get a desired warped image for analysis by choosing the coordinates that form a trapezoidal box, which when warped, will give a somewhat primitive top-down view of what the robot is seeing. 
 
-![source](./writeup_images/perspect_source.png)
+![source](../writeup_images/perspect_source.png)
 
 In the Perspective Transform section, the coordinates of the source box to be used in the perspect_transform function is in lines 22-25:
 ```
@@ -40,7 +23,7 @@ source_upperLeft = [118, 96]
 
 The destination coordinates were left unchanged as the chosen destination coordinates produces a good top-down image shown below.
 
-![destination](./writeup_images/perspect_dest.png)
+![destination](../writeup_images/perspect_dest.png)
 
 Second, we take the output of the perspect_transform function as input to the color_threshold function. The default values for the RGB used is 160,160,160, which were used to detect the navigable terrain.
 
@@ -85,9 +68,7 @@ plt.show()
 ```
 which then produces the images necessary for detecting rock samples:
 
-![Rock sample source](./writeup_images/rock_source.png)
-![Rock sample perspective transform](./writeup_images/rock_persp_trans.png)
-![Rock sample source](./writeup_images/rock_color_thresh.png)
+![Rock sample source, perspective transform and color threshold](../writeup_images/rock_source.png)
 
 For the obstacles, a separate function is created that uses the original color_thresh function and technically get the negation of it.
 An XOR function was used to "negate" the output of color_thresh, in order to retain the black bounderies (the right triangles on the bottom)
@@ -106,9 +87,7 @@ def color_thresh_obstacles(img):
 ```
 The output of the color_thresh_obstacles function is as follows, with original, warped, color_thresh, color_thresh_obstacles outputs respectively:
 
-![Rock sample source](./writeup_images/rock_source.png)
-![Rock sample perspective transform](./writeup_images/rock_persp_trans.png)
-![Rock sample source](./writeup_images/rock_color_thresh.png)
+![Obstacle sample source, perspective transform and color threshold](../writeup_images/obstacles_source.png)
 
 In the last picture, the white part are the obstacles detected fromn the original color_thresh output, which is second to the last image.
 
@@ -164,7 +143,10 @@ Finally, the output images of the color threshold functions are added to the out
                  data.worldmap.shape[1]:data.worldmap.shape[1] + terrain_thresh.shape[1], 1] = rock_thresh
 ```
 The output movie clip from the test notebook:
-<a  href="https://www.youtube.com/embed/aIpcEGg_O5Y" target="_blank"><img src="https://www.youtube.com/embed/aIpcEGg_O5Y" width="560" height="315"></img></a>
+
+  <a href="http://www.youtube.com/watch?feature=player_embedded&v=MTjhOVKIJcY
+" target="_blank"><img src="http://img.youtube.com/vi/MTjhOVKIJcY/0.jpg" 
+alt="IMAGE ALT TEXT HERE" width="240" height="180" border="10" /></a>
 
 ### Autonomous Navigation and Mapping
 #### 1. perception_step and decision_step functions
@@ -205,7 +187,7 @@ The perception step is somewhat similar to the jupyter notebook's process_image 
 
 For the decision_step function, I opted for a state-machine design pattern to easily separate the states. Rover.mode was rarely used since a class-based "modes" seems better in handling the scalability of possible states.
 
-The definition of the State, StateMachine and the State derivatives are found in StateMachine.py
+The definition of the State, StateMachine and the State derivatives are found in [StateMachine.py](https://github.com/vuvuzella/udacity-robond-term1/blob/master/search_sample_return/ssr_project/StateMachine.py)
 
 So the State class is defined as follows:
 ```
@@ -275,7 +257,7 @@ In lines 261-263, A RoverSM class is defined, inheriting from StateMachine. Its 
 
 In lines 265 - 274, instances of each states are initialized as constant member variales of the RoverSM class.
 
-Finally, in decision.py, MarsRoverSM is an instance of RoverSM class (line 16), and in line 16, MarsRoverSM runs the State.run and State.next, using the Rover object as input
+Finally, in [decision.py](https://github.com/vuvuzella/udacity-robond-term1/blob/master/search_sample_return/ssr_project/decision.py), MarsRoverSM is an instance of RoverSM class (line 16), and in line 16, MarsRoverSM runs the State.run and State.next, using the Rover object as input
 
 #### Demonstration
 
