@@ -40,8 +40,8 @@ def htm(rot_mat, trans_mat):
     return htm
 
 # creates DH heterogeneous transform matrix
-def dhHtm(alp, thet, a, d):
-    return Matrix([[       cos(thet),           -sin(thet),              0,             a],
-                   [sin(thet)*cos(alp), cos(thet)*cos(alp),-sin(alp), -sin(alp)*d],
-                   [sin(thet)*sin(alp), cos(thet)*sin(alp), cos(alp),  cos(alp)*d],
+def dhHtm(alpha, q, a, d):
+    return Matrix([[       cos(q),           -sin(q),              0,             a],
+                   [sin(q)*cos(alpha), cos(q)*cos(alpha),-sin(alpha), -sin(alpha)*d],
+                   [sin(q)*sin(alpha), cos(q)*sin(alpha), cos(alpha),  cos(alpha)*d],
                    [                    0,                     0,          0,           1]])
