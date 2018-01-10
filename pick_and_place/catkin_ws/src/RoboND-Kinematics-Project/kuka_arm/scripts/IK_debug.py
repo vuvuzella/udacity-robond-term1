@@ -65,8 +65,9 @@ def test_code(test_case):
     ## as the input and output the position of your end effector as your_ee = [x,y,z]
 
     ### Begin Your FK code here
-    # Create symbols
     #
+    # Create symbols
+	#
     q1, q2, q3, q4, q5, q6, q7 = symbols("q1:8") # theta_i
     d1, d2, d3, d4, d5, d6, d7 = symbols("d1:8") # d_i
     a0, a1, a2, a3, a4, a5, a6 = symbols("a0:7") # a_i
@@ -88,6 +89,8 @@ def test_code(test_case):
 	#
 	# Define Modified DH Transformation matrix
 	#
+    # dhHtm() is defined in kinematics_functions.py
+    print("\nGetting individual htm")
     T0_1 = dhHtm(alpha0, q1, a0, d1)
     T1_2 = dhHtm(alpha1, q2, a1, d2)
     T2_3 = dhHtm(alpha2, q3, a2, d3)
@@ -97,6 +100,7 @@ def test_code(test_case):
     T6_G = dhHtm(alpha6, q7, a6, d7)
 
     # perform symbolic substitution with the defined symbol values
+    print("Perform symbolic substitution on individual htm's")
     T0_1 = T0_1.subs(s)
     T1_2 = T1_2.subs(s)
     T2_3 = T2_3.subs(s)
@@ -105,17 +109,19 @@ def test_code(test_case):
     T5_6 = T5_6.subs(s)
     T6_G = T6_G.subs(s)
 
-    R0_1 = T0_1[:3, :3]
-    R1_2 = T1_2[:3, :3] 
-    R2_3 = T2_3[:3, :3]
-    R3_4 = T3_4[:3, :3]
-    R4_5 = T4_5[:3, :3]
-    R5_6 = T5_6[:3, :3]
-    R6_G = T6_G[:3, :3]
+    # Get the rotation for each htm
+    # R0_1 = T0_1[:3, :3]
+    # R1_2 = T1_2[:3, :3] 
+    # R2_3 = T2_3[:3, :3]
+    # R3_4 = T3_4[:3, :3]
+    # R4_5 = T4_5[:3, :3]
+    # R5_6 = T5_6[:3, :3]
+    # R6_G = T6_G[:3, :3]
 
 	#
 	# Create individual transformation matrices
 	#
+    print("Create htm from 0 to G")
     T0_2 = simplify(T0_1 * T1_2)
     T0_3 = simplify(T0_2 * T2_3)
     T0_4 = simplify(T0_3 * T3_4)
@@ -127,13 +133,14 @@ def test_code(test_case):
 	# Extract rotation matrices from the transformation matrices
 	#
 	#
-    R0_1 = T0_1[:3, :3]
-    R0_2 = T0_2[:3, :3]
+    print("Extract needed rotation matrix")
+    # R0_1 = T0_1[:3, :3]
+    # R0_2 = T0_2[:3, :3]
     R0_3 = T0_3[:3, :3]
-    R0_4 = T0_4[:3, :3]
-    R0_5 = T0_5[:3, :3]
-    R0_6 = T0_6[:3, :3]
-    R0_G = T0_G[:3, :3]
+    # R0_4 = T0_4[:3, :3]
+    # R0_5 = T0_5[:3, :3]
+    # R0_6 = T0_6[:3, :3]
+    # R0_G = T0_G[:3, :3]
 
     ### End FK code here
 
@@ -163,47 +170,58 @@ def test_code(test_case):
             orientation.z, orientation.w])
     pwc_ee = Matrix([px, py, pz]) # end effector based from the wrist center
 
-    ### Your IK code here
+    ### End your IK code here
 	# Compensate for rotation discrepancy between DH parameters and Gazebo
 	#
 	#
     R_corr = rot_z(pi) * rot_y(-pi/2) # reverse the method of compensating mentioned in the video
-
     R_rpy = rot_z(yaw) * rot_y(pitch) * rot_x(roll) * R_corr
-    # R_rpy = R_rpy.evalf()
 
     # Get the wrist-center
+    # ee_magnitude = pwc_ee + Matrix([.54 + .193, 0, 0])
+    # l = sqrt(ee_magnitude[0]**2 + ee_magnitude[1]**2 + ee_magnitude[2]**2) # length/magnitude of ee from wc
+    # p0_wc = (pwc_ee - (s["d6"] + l)) * R_rpy  # wc in terms of the base link
     p0_wc = pwc_ee - (s[d7]) * R_rpy[:,2]  # wc in terms of the base link
-    
+
 	# Calculate joint angles using Geometric IK method
 	#
 	#
     ###
-    theta1 = atan2(p0_wc[1], p0_wc[0])
 
+    # Using law of cosines to get theta 1, 2 and 3
+    # set the length of the sides of the triangle joint2, 3 and 4
     side_a = s[d4]
-    # side_b = sqrt(s[a2]**2 + s[d4])
     side_b = sqrt(pow((sqrt(p0_wc[0]**2 + p0_wc[1]**2) - s[a1]), 2) + pow((p0_wc[2] - s[d1]), 2))  # i dont know why?!
     side_c = s[a2]
 
+    # Get the angles
     angle_a = acos((side_b**2 + side_c**2 - side_a**2)/(2*side_b*side_c))
     angle_b = acos((side_a**2 + side_c**2 - side_b**2)/(2*side_a*side_c))
     angle_c = acos((side_a**2 + side_b**2 - side_c**2)/(2*side_a*side_b))
 
+    # Get theta1, 2 and 3
+    # using pythagorean. Draw the kinematics out to understand
+    theta1 = atan2(p0_wc[1], p0_wc[0]) 
+    # theta2 is a subset of angle_a, so we remove the angle that's not related to theta2
     theta2 = pi/2 - angle_a - atan2(p0_wc[2] - s[d1], sqrt(p0_wc[0]**2 + p0_wc[1]**2) - s[a1])
+    # theta3 is a subset of angle_b, so we remove the angle that is not theta3
     theta3 = pi/2 - (angle_b + 0.036) 
 
-    # theta2 = acos((side_a**2 - side_c**2 - side_b**2)/-(2*side_c*side_b))
-    # theta3 = acos((side_b**2 - side_c**2 - side_a**2)/-(2*side_c*side_a))
+    # Get the rotation from joint 3 to the ee
+    # evaluate the rotation from base link to link3 (joint 0 to joint 3)
+    # because we now have the theta for these joints that defines the pose of the wrist center
+    R0_3_eval = R0_3.evalf(subs={q1: theta1, q2: theta2, q3: theta3})
+    # The inverse of R0_3_eval yields R3_0, R_rpy is 
+    R3_6 = R0_3_eval.inv("LU") * R_rpy
 
-    R0_3 = R0_3.evalf(subs={q1: theta1, q2: theta2, q3: theta3})
-    R3_6 = R0_3.inv("LU") * R_rpy
-
+    # We get theta4, 5, 6 from R3_G which now contains the evaluated
+    # rotation from base link to wrist center
+    # TODO: understand the intuition behind the computation of these angles
     theta4 = atan2(R3_6[2, 2], -R3_6[0, 2])
     theta5 = atan2(sqrt(R3_6[0, 2]**2 + R3_6[2, 2]**2),R3_6[1, 2])
     theta6 = atan2(-R3_6[1, 1], R3_6[1, 0])
+    ### End your IK code here
 
-    ## 
     ########################################################################################
     
 
@@ -269,10 +287,10 @@ if __name__ == "__main__":
     print("Running test: " + str(test_case_number))
     test_code(test_cases[test_case_number])
 
-    test_case_number = 2
-    print("Running test: " + str(test_case_number))
-    test_code(test_cases[test_case_number])
+    # test_case_number = 2
+    # print("Running test: " + str(test_case_number))
+    # test_code(test_cases[test_case_number])
 
-    test_case_number = 3
-    print("Running test: " + str(test_case_number))
-    test_code(test_cases[test_case_number])
+    # test_case_number = 3
+    # print("Running test: " + str(test_case_number))
+    # test_code(test_cases[test_case_number])
