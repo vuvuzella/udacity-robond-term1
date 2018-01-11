@@ -1,5 +1,7 @@
 ## Project: Kinematics Pick & Place
 
+## [IK_server.py can be found HERE](https://github.com/vuvuzella/udacity-robond-term1/blob/master/pick_and_place/catkin_ws/src/RoboND-Kinematics-Project/kuka_arm/scripts/IK_server.py)
+
 ---
 
 **Steps to complete the project:**  
@@ -20,6 +22,7 @@
 [image3]: ./misc_images/misc2.png
 
 ## [Rubric](https://review.udacity.com/#!/rubrics/972/view) Points
+
 ### Here I will consider the rubric points individually and describe how I addressed each point in my implementation.  
 
 ---
