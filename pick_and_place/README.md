@@ -1,5 +1,4 @@
 ## Project: Kinematics Pick & Place
-### Writeup Template: You can use this file as a template for your writeup if you want to submit it as a markdown file, but feel free to use some other method and submit a pdf if you prefer.
 
 ---
 
@@ -25,18 +24,39 @@
 ### Here I will consider the rubric points individually and describe how I addressed each point in my implementation.  
 
 ---
-### Writeup / README
-
-#### 1. Provide a Writeup / README that includes all the rubric points and how you addressed each one.  You can submit your writeup as markdown or pdf.  
-
-You're reading it!
 
 ### Kinematic Analysis
 #### 1. Run the forward_kinematics demo and evaluate the kr210.urdf.xacro file to perform kinematic analysis of Kuka KR210 robot and derive its DH parameters.
 
+### 1.1 Placement of the frames
+
+[image1]: ./writeup_files/kd_frames_xz_0_ee.png
+
+##### Frame 0
+    The z-axis of frame zero (z0) is coincidental with the z1 (z-axis of frame1) by virtue of convention between the base link (w/c frame 0 is) and the first joint connected to the base-link (frame 1). However, the origin will be where x0 and z0 are perpendicular, as shown in fig. 1 labeled as o0 (origin 0). Here, x0 and x1 are not coincidental, because we want to take into account the height, in z0 or z1 direction, of the end-effector (ee)
+
+##### Frame 1
+    z1 is coincidental with z0, however, it is skewed with z2 (more info about this on frame 2). z1 is set on the axis of rotation of the revolute joint 1 (the joint whose origin is labeled o1). x1 is parallel to x0 and perpendicular to both z0 and z1.
+
+##### Frame 2
+
+    z2 is set on the axis of rotation of the revolute joint 2 (origin labeled as o2), going "into the page" direction as its positive rotation. z2 is also skewed with z1.
+
+
+
 Here is an example of how to include an image in your writeup.
 
 ![alt text][image1]
+
+Links | alpha(i-1) | a(i-1) | d(i-1) | theta(i)
+--- | --- | --- | --- | ---
+0->1 | 0 | 0 | L1 | qi
+1->2 | -90 | L2 | 0 | -pi/2 + q2
+2->3 | 0 | 0 | 0 | q4
+3->4 |  -90 | 0 | 0 | q4
+4->5 | 0 | 0 | 0 | 0
+5->6 | 0 | 0 | 0 | 0
+6->EE | 0 | 0 | 0 | 0
 
 #### 2. Using the DH parameter table you derived earlier, create individual transformation matrices about each joint. In addition, also generate a generalized homogeneous transform between base_link and gripper_link using only end-effector(gripper) pose.
 
