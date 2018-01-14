@@ -174,6 +174,18 @@ fig A.2
 
 A. Individual Heterogeneous Transformation Matrices
 
+   A DH transform matrix is defined to be as:
+
+   ![T0_1](./writeup_files/dhHtm.jpg)
+
+   Where as arguments we use alpha_i-1 (link twist), a_i-1 (link length), d_i (link offset) and theta_i (joint angle)
+
+   Each individual DH Heterogenous transformation matrices is defined as the 
+   matrix of ```i-1``` multiplied by the matrix of ```i``` where ```i``` is the ith link
+
+   ```T0_1 = htm_i-1 * htm_i```
+
+The following are the individual DH transform matrices of each link
 1. Link 0 to Link 1
 
    ![T0_1](./writeup_files/htm0_1.png)
@@ -206,15 +218,25 @@ A. Individual Heterogeneous Transformation Matrices
 
    ![T0_G](./writeup_files/htm0_G.png)
 
+9. DH parameter notation and Gazebo URDF discrepancies
+   The discrepancy between the DH notation is defined as rotating the position of the end-effector in the Z-axis by 180 degrees and a rotation on the y-axis by -90 degrees.
+
+   ![Correction Matrix](./writeup_files/rot_matrix_correction.png)
+
+   ```correction_matrix = Rotation_z(180) * Rotation_y(-90)```
+
+   Hence for any given end effector, we must multiply it with the correction matrix
+
+   ![Corrected End effector](./writeup_files/end_effector_corrected.png)
+
+   ``` Rotation_zyx_ee * correction_matrix```
+
+
 #### 3. Decouple Inverse Kinematics problem into Inverse Position Kinematics and inverse Orientation Kinematics; doing so derive the equations to calculate all individual joint angles.
 
 A. Inverse Position
 
 1. Firstly, we calculate for the rotation and position of the wrist center
-
-   + Calculate the wrist center rotation by creating the rotation matrix applied with the correction needed to take into account the difference between the DH-parameter convention and Gazebo values. The correction matrix is the cross product of a 180-degree Z-axis rotation and a -90-degree Y-axis rotation. 
-
-      ```correction_matrix = Rotation_z(180) * Rotation_y(-90)```
 
    + Then we calculate the rotation matrix from the base link to the wrist center, taking into account the correction matrix. The rotation matrix is retrieved from ROS as roll, pitch and yaw by using the quaternion functions.
 
@@ -273,9 +295,15 @@ A. Inverse Position
       ```remaining_angle = atan2(pos_wc[2] - d1, projx)```
       ```theta2 = 90 - angle_a - remaining_angle```
 
-   + theta3 is just 90 minus angle_b and some offset
+   + Theta3 is derived by extending side A, that will create an alternate angle. At the same time, the reference axis for  joint 3 is rotated by the value of theta2. This means that to get the value of theta 3, we just subtract the alternate angle, whose value is equal to angle_b from the previous section. We also take into account the sag angle from joint 3 to joint 5/wrist center. The sag angle is derived below.
 
-      ```theta3 = 90 - angle_b + 0.036```
+   ![theta3](./writeup_files/theta3.jpg)
+
+   ```sag_angle = atan2(1.501**2 - 0.054**2)```
+
+   Where 1.501 is the link length from joint 3 to 5 (our wrist center), 0.054 is the "z-offset" which is negative, from joint 3 to joint 4. So Finally, theta3 is
+
+   ```theta3 = 90 - angle_b + sag_angle```
 
 B. Onverse Orientation Kinematics
 
@@ -289,16 +317,44 @@ B. Onverse Orientation Kinematics
 
    ```R3_6 = R0_3.inv() * Rot_wc```
 
-3. theta4 (q4)
+3. theta4, theta5, theta6
+
+   ![Rotation from Joint  3 to Gripper](./writeup_files/R3_G.png)
 
    + After getting the rotation from joint3 to 6, we now have a matrix which we can derive the next three angle thetas.
 
-   + For theta4, we choose R3_6[2, 2] and -R3_6[0, 2] as the y and x parameters for the inverse tangent function
+   + For theta4, we choose R3_6[2, 2] and R3_6[0, 2], sin(q5) cancels out, then we multiply by -1 to R3_6[0, 2] to get rid of the negative sign to have:
 
-   + For theta5, we get the square root of the sum of the squares of R3_6[0, 2] and R3_6[2, 2] for the y parameter, and R3_6[1, 2] for the x parameter of the inverse tangent function
+      ```arctangent(sin(q4)/cos(q4)) => atan2(R3_6[2, 2], -R3_6[0, 2])```
 
-   + Finally for theta6, we use -R3_6[1, 1] and R3_6[1, 0] for the y and x parameters for the inverse tangent function
+   + For theta5, we see a possible combination of R3_6[0, 2], R3_6[2, 2] and R3_6[1, 2]. First, we use the equation of a unit circle, using R3_6[0, 2] and R3_6[2, 2]:
 
+      ```sqrt(((-sin(q5))**2 * cos(q4)**2) + (sin(q4)**2 * sin(q5)**2))```
+
+      ```sqrt( sin(q5)**2 (cos(q4)**2 + sin(q4)**2) ) ```
+
+      ```y = sin(q5) * sqrt((cos(q4)**2 + sin(q4)**2))```
+
+      `sqrt((cos(q4)**2 + sin(q4)**2))` is an equation of a unit circle, this just becomes 1. Hence `y = sin(q5)`
+
+      Then we use R3_6[1, 2] as the x-parameter for tha arc tangent function
+
+      ```arctangent(sin(q5) / cos(q5)) => atan2(y, R3_6[1, 2])```
+
+   + For theta6, using R3_6[1, 1] and R3_6[1, 0] cancels out sin(q5), then multiply -1 to R3_6[1, 1] to keep values positive.
+
+      ```arctangent(sin(q6) / cos(q6)) => atan2(-R3_6[1, 1], R3_6[1, 0])```
+
+   + Since there are multiple solutions in solving for the angles of an end effector position, we handle it by checking the sin(q5) and perform the necessary sign change to keep numbers positive
+
+      ```
+      if sin(theta5) < 0:
+            theta4 = atan2(-R3_6[2, 2], R3_6[0, 2])
+            theta6 = atan2(R3_6[1, 1], -R3_6[1, 0])
+      else:
+            theta4 = atan2(R3_6[2, 2], -R3_6[0, 2])
+            theta6 = atan2(-R3_6[1, 1], R3_6[1, 0])
+      ```
 
 ### Project Implementation
 
@@ -306,19 +362,27 @@ B. Onverse Orientation Kinematics
 
    The overall structure of the algorithm is that, for each call to handle_calculate_IK, I would be performing the forward kinematics calculation to generate the hetero-transform matrices from base link to end effector, then for each pose that is received by the function, I would calculate the inverse kinematics to get the theta angles.
 
-   My foremost mistake when implementing the inverse kinematics was that I did not analyze the system quite rigidly due to my lack of understanding of the concept of vector and planar projection. Again, I realized the importance of PROJECTION. PROJECTION is the key in analyzing manipulator arms. Aside from geometry and trigonometry ofcourse.
+   Firstly, the inv("LU") function in `R3_6.inv("LU")` works differently resulting in end effectors not ending in the desired position. To solve this, I used the transpose instead
 
    Secondly, when running the IK_debug.py, my offset error (end effector) were getting larger for each iteration of the IK loop, BUT NOT for each call to handle_calculate_IK. I realized I did
 
-      ```R0_3 = R0_3.evalf(subs={q1: theta1...})```
+      R0_3 = R0_3.evalf(subs={q1: theta1...})
 
    which overwrites the rotation matrix with the evaluated matrix. To fix this, I just assigned the evaluated matrix to another variable. Dont touch the created matrix.
 
    Another note was that in my DH parameter table, I also included a default value for q1 - q7, which is zero. The result of this changed the output of some evaluations. Instead of putting the default value zero, I put the q1-7 symbolic parameters instead.
 
-   One improvement I did was I commented out the unneccessary computations for individual matrices that were not used later during the IK computation.
+   Initial result my implementation (before switching to transpose(), from inv()) was that most of the time I had the end effector facing downwards.
 
-   Some improvements could be, since I am dealing with the kuka arm the whole time, I could calculate the forward kinematics once, then use the generated transform matrices for the specific inverse kinematics calculations for every pose on a request.
+   After changing to transpose(), my end effector offset difference is now consistent/constant, and the end effectors are always ending in/near the desired position. However, During transitions, the arm still experience unneccessary rotations, which makes transitions very time consuming.
 
-   End of report.
+   Some pictures of the result of my implementation:
+
+   ![1](./writeup_files/1.jpg)
+   ![2](./writeup_files/2.jpg)
+   ![4](./writeup_files/4.jpg)
+   ![5](./writeup_files/5.jpg)
+   ![7](./writeup_files/7.jpg)
+   ![8](./writeup_files/8.jpg)
+   ![9](./writeup_files/9.jpg)
 
