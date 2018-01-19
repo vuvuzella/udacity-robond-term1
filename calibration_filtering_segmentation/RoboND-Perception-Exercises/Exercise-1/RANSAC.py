@@ -58,7 +58,7 @@ inliers, coefficients = seg.segment()
 # ExtractIndices Filter
 # Extract inliers
 # changing the negative flag to true can extract the outliers
-extraced_inliers = cloud_filtered.extract(inliers, negative=False)
+extracted_inliers = cloud_filtered.extract(inliers, negative=False)
 filename = 'extracted_inliers.pcd'
 pcl.save(extraced_inliers, filename)
 
@@ -68,7 +68,7 @@ pcl.save(extraced_inliers, filename)
 
 # Extract outliers
 # changing the negative flag to true can extract the outliers
-extraced_inliers = cloud_filtered.extract(inliers, negative=True)
+extracted_inliers = cloud_filtered.extract(inliers, negative=True)
 filename = 'extracted_outliers.pcd'
 pcl.save(extraced_inliers, filename)
 
