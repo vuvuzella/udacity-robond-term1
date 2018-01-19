@@ -10,9 +10,9 @@ def rgb_to_hsv(rgb_list):
     return hsv_normalized
 
 
-def compute_color_histograms(cloud, using_hsv=False):
+def compute_color_histograms(cloud, using_hsv=False, nbins=32, bins_range=(0, 255)):
 
-    # Compute histograms for the clusters
+    # Compute histogram for the clusters
     point_colors_list = []
 
     # Step through each point in the point cloud
@@ -33,17 +33,22 @@ def compute_color_histograms(cloud, using_hsv=False):
         channel_2_vals.append(color[1])
         channel_3_vals.append(color[2])
     
-    # TODO: Compute histograms
-
-    # TODO: Concatenate and normalize the histograms
+    # Compute histogram
+    channel_1_hist = np.histogram(channel_1_vals, bins=nbins, range=bins_range)
+    channel_2_hist = np.histogram(channel_2_vals, bins=nbins, range=bins_range)
+    channel_3_hist = np.histogram(channel_3_vals, bins=nbins, range=bins_range)
+    # Concatenate and normalize the histogram
+    bin_edges = channel_1_hist[1]
+    bin_centers = (bin_edges[1:] + bin_edges[0:len(bin_edges) - 1]) / 2
+    hist_features = np.concatenate((channel_1_hist[0], channel_2_hist[0], channel_3_hist[0])).astype(np.float64)
 
     # Generate random features for demo mode.  
     # Replace normed_features with your feature vector
-    normed_features = np.random.random(96) 
+    normed_features = hist_features / np.sum(hist_features)
     return normed_features 
 
 
-def compute_normal_histograms(normal_cloud):
+def compute_normal_histograms(normal_cloud, nbins=32, bins_range=(0, 255)):
     norm_x_vals = []
     norm_y_vals = []
     norm_z_vals = []
@@ -55,12 +60,17 @@ def compute_normal_histograms(normal_cloud):
         norm_y_vals.append(norm_component[1])
         norm_z_vals.append(norm_component[2])
 
-    # TODO: Compute histograms of normal values (just like with color)
+    # TODO: Compute histogram of normal values (just like with color)
+    norm_x_vals = np.histogram(norm_x_vals, bins=nbins, range=bins_range)
+    norm_y_vals = np.histogram(norm_y_vals, bins=nbins, range=bins_range)
+    norm_z_vals = np.histogram(norm_z_vals, bins=nbins, range=bins_range)
 
-    # TODO: Concatenate and normalize the histograms
+    # TODO: Concatenate and normalize the histogram
+    bin_edges = norm_x_vals[1]
+    bin_centers = (bin_edges[1:] + bin_edges[0:len(bin_edges) - 1]) / 2
+    hist_features = np.concatenate((norm_x_vals[0], norm_y_vals[0], norm_z_vals[0])).astype(np.float64)
 
     # Generate random features for demo mode.  
     # Replace normed_features with your feature vector
-    normed_features = np.random.random(96)
-
+    normed_features = hist_features / np.sum(hist_features)
     return normed_features
