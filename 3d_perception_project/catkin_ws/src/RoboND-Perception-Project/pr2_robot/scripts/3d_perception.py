@@ -55,11 +55,24 @@ def pcl_callback(pcl_msg):
     pcl_data = ros_to_pcl(pcl_msg)
     
     # TODO: Statistical Outlier Filtering
+    # Much like the previous filters,
+    # we start by creating a filter object: 
+    outlier_filter = pcl_data.make_statistical_outlier_filter()
+    mean = 50   # mean number of neighboring points
+    thresh = 1.0 # Set threshold scale factor
+    # Set the number of neighboring points to analyze for any given point
+    outlier_filter.set_mean_k(mean)
+    # Any point with a mean distance larger than global
+    # (mean distance+x*std_dev) will be considered outlier
+    outlier_filter.set_std_dev_mul_thresh(thresh)
+    # filtered point cloud data
+    cloud_filtered = outlier_filter.filter()
 
     # Voxel Grid Downsampling
     # TODO: Tweaking, comments
     LEAF_SIZE = 0.01
-    vox = pcl_data.make_voxel_grid_filter()
+    vox = cloud_filtered.make_voxel_grid_filter()
+    # vox = pcl_data.make_voxel_grid_filter()
     # leaf size for x, y and z dimensions
     vox.set_leaf_size(LEAF_SIZE, LEAF_SIZE, LEAF_SIZE)
     cloud_filtered = vox.filter()   # produce a downsampled point cloud data
@@ -67,7 +80,7 @@ def pcl_callback(pcl_msg):
     # PassThrough Filter
     # TODO: Tweaking
     filter_axis = 'z'   # set the axis to 'pass through'
-    axis_min = 0.759    # minimum z TODO: tweak for project
+    axis_min = 0.7    # minimum z TODO: tweak for project
     axis_max = 1.1      # max z TODO: tweak for project
     passthrough = cloud_filtered.make_passthrough_filter()
     passthrough.set_filter_field_name(filter_axis)
@@ -76,7 +89,7 @@ def pcl_callback(pcl_msg):
 
     # RANSAC Plane Segmentation
     # TODO: Comments
-    max_distance = 0.01
+    max_distance = 0.015
     ransac = cloud_filtered.make_segmenter()
     ransac.set_model_type(pcl.SACMODEL_PLANE)
     ransac.set_method_type(pcl.SAC_RANSAC)
@@ -86,7 +99,7 @@ def pcl_callback(pcl_msg):
     # TODO: Comments
     inliers, coefficients = ransac.segment()
     cloud_table = cloud_filtered.extract(inliers, negative=False)
-    cloud objects = cloud_filtered.extract(inliers, negative=True)
+    cloud_objects = cloud_filtered.extract(inliers, negative=True)
 
     # Euclidean Clustering
     # convert object point cloud data to xyz for segmentation
@@ -96,17 +109,17 @@ def pcl_callback(pcl_msg):
     # Create Cluster-Mask Point Cloud to visualize each cluster separately
     # TODO: Tweak tolerances
     tolerance = 0.05
-    min_cluster_size = 200
+    min_cluster_size = 100
     max_cluster_size = 2000
-    ec = white_cloud.make_EucledianClusterExtraction()
-    ec.setClusterTolerance(tolerance)
+    ec = white_cloud.make_EuclideanClusterExtraction()
+    ec.set_ClusterTolerance(tolerance)
     ec.set_MinClusterSize(min_cluster_size)
     ec.set_MaxClusterSize(max_cluster_size)
     # Search the k-dimension tree for clusters according to set parameters
     ec.set_SearchMethod(kd_tree)
     cluster_indices = ec.Extract()  # Get the cluster groups
     # Visualization of the Eucledian Segmentation Step
-    cluster_color - get_color_list(len(cluster_indices))
+    cluster_color = get_color_list(len(cluster_indices))
     color_cluster_point_list = []
 
     for j, indices in enumerate(cluster_indices):
@@ -118,6 +131,10 @@ def pcl_callback(pcl_msg):
                 rgb_to_float(cluster_color[j])
             ])
 
+    # new cloud containing all clusters, each with unique color
+    cluster_cloud = pcl.PointCloud_PointXYZRGB()
+    cluster_cloud.from_list(color_cluster_point_list)
+
     # Convert PCL data to ROS messages
     ros_cloud_objects = pcl_to_ros(cloud_objects)
     ros_cloud_table = pcl_to_ros(cloud_table)
@@ -128,29 +145,60 @@ def pcl_callback(pcl_msg):
     pcl_table_pub.publish(ros_cloud_table)
     pcl_cluster_pub.publish(ros_cloud_cluster)
 
-# Exercise-3 TODOs:
+# Exercise-3 TODO:
+
+    # Array containers to get the pint cloud data and the labels
+    detected_objects_labels = []
+    detected_objects = []
 
     # Classify the clusters! (loop through each detected cluster one at a time)
 
-        # Grab the points for the cluster
+    for index, pts_list in enumerate(cluster_indices):
+        # Grab the points for the cluster 
+        # from the extracted outliers (cloud_objects)
+        pcl_cluster = cloud_objects.extract(pts_list)
+        sample_cloud = pcl_to_ros(pcl_cluster)
 
         # Compute the associated feature vector
+        # Using hsv instead of RGB
+        chists = compute_color_histograms(sample_cloud, using_hsv=True)
+        normals = get_normals(sample_cloud)
+        nhists = compute_normal_histograms(normals)
+        feature = np.concatenate((chists, nhists))
 
         # Make the prediction
+        # retrieve the label for the result and add
+        # it to the detected_objects_labels list
+        prediction = clf.predict(scaler.transform(feature.reshape(1, -1)))
+        label = encoder.inverse_transform(prediction)[0]
+        detected_objects_labels.append(label)
 
         # Publish a label into RViz
+        label_pos = list(white_cloud[pts_list[0]])
+        label_pos[2] += 0.4 # TODO: What is this? offset?
+        object_markers_pub.publish(make_label(label, label_pos, index))
 
         # Add the detected object to the list of detected objects.
+        do = DetectedObject()
+        do.label = label
+        do.cloud = sample_cloud
+        detected_objects.append(do)
+
+        # Do some logging
+        rospy.loginfo('Detected {} objects: {}'.format(len(detected_objects_labels), detected_objects_labels))
+
 
     # Publish the list of detected objects
+    print 'Publishing detected objects'
+    detected_objects_pub.publish(detected_objects)
 
     # Suggested location for where to invoke your pr2_mover() function within pcl_callback()
     # Could add some logic to determine whether or not your object detections are robust
     # before calling pr2_mover()
-    try:
-        pr2_mover(detected_objects_list)
-    except rospy.ROSInterruptException:
-        pass
+    # try:
+    #     pr2_mover(detected_objects)
+    # except rospy.ROSInterruptException:
+    #     pass
 
 # function to load parameters and request PickPlace service
 def pr2_mover(object_list):
@@ -201,16 +249,17 @@ if __name__ == '__main__':
     # data type: PointCloud2, callback: pcl_callback, queue size: 1
     rospy.Subscriber('/pr2/world/points', pc2.PointCloud2, pcl_callback, queue_size=1)
 
+
     # Create Publishers
     pcl_objects_pub = rospy.Publisher('/pcl_objects', PointCloud2, queue_size=1)
     pcl_table_pub = rospy.Publisher('/pcl_table', PointCloud2, queue_size=1)
     pcl_cluster_pub = rospy.Publisher('/pcl_cluster', PointCloud2, queue_size=1)
     object_markers_pub = rospy.Publisher('/object_markers', Marker, queue_size=1)
-    detect_objects_pub = rospy.Publisher('/detected_objects', DetectedObjectsArray, queue_size=1)
+    detected_objects_pub = rospy.Publisher('/detected_objects', DetectedObjectsArray, queue_size=1)
 
     # Load Model From disk
     # TODO: Train and SVM to create model.sav
-    model = pickle.load(open('model.sav', 'rb'))
+    model = pickle.load(open('./model.sav', 'rb'))
     clf = model['classifier']
     encoder = LabelEncoder()
     encoder.classes_ = model['classes']
