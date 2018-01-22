@@ -54,12 +54,12 @@ def pcl_callback(pcl_msg):
     # Convert ROS msg to PCL data
     pcl_data = ros_to_pcl(pcl_msg)
     
-    # TODO: Statistical Outlier Filtering
+    # Statistical outlier filtering
     # Much like the previous filters,
     # we start by creating a filter object: 
     outlier_filter = pcl_data.make_statistical_outlier_filter()
-    mean = 50   # mean number of neighboring points
-    thresh = 1.0 # Set threshold scale factor
+    mean = 7   # mean number of neighboring points
+    thresh = 0.5 # Set threshold scale factor
     # Set the number of neighboring points to analyze for any given point
     outlier_filter.set_mean_k(mean)
     # Any point with a mean distance larger than global
@@ -69,8 +69,8 @@ def pcl_callback(pcl_msg):
     cloud_filtered = outlier_filter.filter()
 
     # Voxel Grid Downsampling
-    # TODO: Tweaking, comments
-    LEAF_SIZE = 0.01
+    # TODO: comments
+    LEAF_SIZE = 0.008
     vox = cloud_filtered.make_voxel_grid_filter()
     # vox = pcl_data.make_voxel_grid_filter()
     # leaf size for x, y and z dimensions
@@ -78,10 +78,9 @@ def pcl_callback(pcl_msg):
     cloud_filtered = vox.filter()   # produce a downsampled point cloud data
 
     # PassThrough Filter
-    # TODO: Tweaking
-    filter_axis = 'z'   # set the axis to 'pass through'
-    axis_min = 0.7    # minimum z TODO: tweak for project
-    axis_max = 1.1      # max z TODO: tweak for project
+    filter_axis = 'z'    # set the axis to 'pass through'
+    axis_min = 0.6       # minimum z
+    axis_max = 0.79      # max z
     passthrough = cloud_filtered.make_passthrough_filter()
     passthrough.set_filter_field_name(filter_axis)
     passthrough.set_filter_limits(axis_min, axis_max)
@@ -89,7 +88,7 @@ def pcl_callback(pcl_msg):
 
     # RANSAC Plane Segmentation
     # TODO: Comments
-    max_distance = 0.015
+    max_distance = 0.009
     ransac = cloud_filtered.make_segmenter()
     ransac.set_model_type(pcl.SACMODEL_PLANE)
     ransac.set_method_type(pcl.SAC_RANSAC)
@@ -107,10 +106,9 @@ def pcl_callback(pcl_msg):
     kd_tree = white_cloud.make_kdtree()
 
     # Create Cluster-Mask Point Cloud to visualize each cluster separately
-    # TODO: Tweak tolerances
-    tolerance = 0.05
-    min_cluster_size = 100
-    max_cluster_size = 2000
+    tolerance = 0.03
+    min_cluster_size = 170
+    max_cluster_size = 800
     ec = white_cloud.make_EuclideanClusterExtraction()
     ec.set_ClusterTolerance(tolerance)
     ec.set_MinClusterSize(min_cluster_size)
@@ -145,7 +143,7 @@ def pcl_callback(pcl_msg):
     pcl_table_pub.publish(ros_cloud_table)
     pcl_cluster_pub.publish(ros_cloud_cluster)
 
-# Exercise-3 TODO:
+# Exercise-3:
 
     # Array containers to get the pint cloud data and the labels
     detected_objects_labels = []
@@ -175,7 +173,7 @@ def pcl_callback(pcl_msg):
 
         # Publish a label into RViz
         label_pos = list(white_cloud[pts_list[0]])
-        label_pos[2] += 0.4 # TODO: What is this? offset?
+        label_pos[2] += 0.2 # TODO: What is this? offset?
         object_markers_pub.publish(make_label(label, label_pos, index))
 
         # Add the detected object to the list of detected objects.
@@ -258,7 +256,6 @@ if __name__ == '__main__':
     detected_objects_pub = rospy.Publisher('/detected_objects', DetectedObjectsArray, queue_size=1)
 
     # Load Model From disk
-    # TODO: Train and SVM to create model.sav
     model = pickle.load(open('./model.sav', 'rb'))
     clf = model['classifier']
     encoder = LabelEncoder()
