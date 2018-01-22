@@ -59,7 +59,7 @@ def pcl_callback(pcl_msg):
     # we start by creating a filter object: 
     outlier_filter = pcl_data.make_statistical_outlier_filter()
     mean = 7   # mean number of neighboring points
-    thresh = 0.5 # Set threshold scale factor
+    thresh = 0.3 # Set threshold scale factor
     # Set the number of neighboring points to analyze for any given point
     outlier_filter.set_mean_k(mean)
     # Any point with a mean distance larger than global
@@ -118,7 +118,7 @@ def pcl_callback(pcl_msg):
     # Create Cluster-Mask Point Cloud to visualize each cluster separately
     tolerance = 0.03
     min_cluster_size = 150
-    max_cluster_size = 800
+    max_cluster_size = 1100
     ec = white_cloud.make_EuclideanClusterExtraction()
     ec.set_ClusterTolerance(tolerance)
     ec.set_MinClusterSize(min_cluster_size)
@@ -203,31 +203,85 @@ def pcl_callback(pcl_msg):
     # Suggested location for where to invoke your pr2_mover() function within pcl_callback()
     # Could add some logic to determine whether or not your object detections are robust
     # before calling pr2_mover()
-    # try:
-    #     pr2_mover(detected_objects)
-    # except rospy.ROSInterruptException:
-    #     pass
+    try:
+        pr2_mover(detected_objects)
+    except rospy.ROSInterruptException:
+        # Add code to handle when no objects are detected..
+        pass
 
 # function to load parameters and request PickPlace service
 def pr2_mover(object_list):
 
     # TODO: Initialize variables
+    object_name = String()
+    object_group = ''
+    centroid = None
+    point_cloud = None
+    arm_name = String()
+    test_scene_num = Int32()
+    test_scene_num.data = 3 # TODO: can I get this automatically?
+    pick_pose = Pose()
+    place_pose = Pose()
+    dropbox_right_pos = ''
+    dropbox_left_pos = ''
+    dict_list = []
 
     # TODO: Get/Read parameters
+    object_list_param = rospy.get_param('/object_list')
 
     # TODO: Parse parameters into individual variables
 
     # TODO: Rotate PR2 in place to capture side tables for the collision map
 
     # TODO: Loop through the pick list
+    for item in object_list_param:
+        object_name.data = item['name']
+        object_group = item['group']
 
-        # TODO: Get the PointCloud for a given object and obtain it's centroid
+        # Get the PointCloud for a given object and obtain it's centroid
+        for obj in object_list:
+            if obj.label == object_name.data:
+                point_cloud = obj.cloud
+                break
+            else:
+                pass
+        points_arr = ros_to_pcl(point_cloud).to_array()
+        centroid = np.mean(points_arr, axis=0)[:3]
+        pick_pose.position.x = np.asscalar(centroid[0])
+        pick_pose.position.y = np.asscalar(centroid[1])
+        pick_pose.position.z = np.asscalar(centroid[2])
+        print type(pick_pose.position.x)
 
-        # TODO: Create 'place_pose' for the object
+        # Create 'place_pose' for the object
+        dropbox_param = rospy.get_param('/dropbox')
+        for dest in dropbox_param:
+            if dest['name'] == 'left':
+                dropbox_left_pos = dest['position']
+            elif dest['name'] == 'right':
+                dropbox_right_pos = dest['position']
+            else:
+                # add more place destinations
+                pass
+        if object_group == 'green':
+            place_pose.position.x = float(dropbox_right_pos[0])
+            place_pose.position.y = float(dropbox_right_pos[1])
+            place_pose.position.z = float(dropbox_right_pos[2])
+        else:
+            place_pose.position.x = float(dropbox_left_pos[0])
+            place_pose.position.y = float(dropbox_left_pos[1])
+            place_pose.position.z = float(dropbox_left_pos[2])
 
-        # TODO: Assign the arm to be used for pick_place
+        print(type(place_pose.position.y))
 
-        # TODO: Create a list of dictionaries (made with make_yaml_dict()) for later output to yaml format
+        # Assign the arm to be used for pick_place
+        if object_group == 'green':
+            arm_name.data = 'right'
+        else:
+            arm_name.data = 'left'
+
+        # Create a list of dictionaries (made with make_yaml_dict()) for later output to yaml format
+        yaml_dict = make_yaml_dict(test_scene_num, arm_name, object_name, pick_pose, place_pose)
+        dict_list.append(yaml_dict)
 
         # Wait for 'pick_place_routine' service to come up
         rospy.wait_for_service('pick_place_routine')
@@ -236,14 +290,16 @@ def pr2_mover(object_list):
             pick_place_routine = rospy.ServiceProxy('pick_place_routine', PickPlace)
 
             # TODO: Insert your message variables to be sent as a service request
-            resp = pick_place_routine(TEST_SCENE_NUM, OBJECT_NAME, WHICH_ARM, PICK_POSE, PLACE_POSE)
+            # resp = pick_place_routine(TEST_SCENE_NUM, OBJECT_NAME, WHICH_ARM, PICK_POSE, PLACE_POSE)
+            resp = pick_place_routine(test_scene_num, object_name, arm_name, pick_pose, place_pose)
 
             print ("Response: ",resp.success)
 
         except rospy.ServiceException, e:
             print "Service call failed: %s"%e
 
-    # TODO: Output your request parameters into output yaml file
+    # Output your request parameters into output yaml file
+    send_to_yaml("test_world_" + str(test_scene_num.data) + ".yaml", dict_list)
 
 
 
