@@ -78,12 +78,22 @@ def pcl_callback(pcl_msg):
     cloud_filtered = vox.filter()   # produce a downsampled point cloud data
 
     # PassThrough Filter
+    # Set z-axis pass through filter
     filter_axis = 'z'    # set the axis to 'pass through'
     axis_min = 0.6       # minimum z
-    axis_max = 0.79      # max z
+    axis_max = 0.85      # max z
     passthrough = cloud_filtered.make_passthrough_filter()
     passthrough.set_filter_field_name(filter_axis)
     passthrough.set_filter_limits(axis_min, axis_max)
+    cloud_filtered = passthrough.filter()
+    # Set x-axis pass through filter
+    # to Filter out the drop boxes being mistakenly clustered
+    filter_x_axis = 'x'    # set the axis to 'pass through'
+    axis_x_min = 0.4
+    axis_x_max = 2
+    passthrough = cloud_filtered.make_passthrough_filter()
+    passthrough.set_filter_field_name(filter_x_axis)
+    passthrough.set_filter_limits(axis_x_min, axis_x_max)
     cloud_filtered = passthrough.filter()
 
     # RANSAC Plane Segmentation
@@ -107,7 +117,7 @@ def pcl_callback(pcl_msg):
 
     # Create Cluster-Mask Point Cloud to visualize each cluster separately
     tolerance = 0.03
-    min_cluster_size = 170
+    min_cluster_size = 150
     max_cluster_size = 800
     ec = white_cloud.make_EuclideanClusterExtraction()
     ec.set_ClusterTolerance(tolerance)
