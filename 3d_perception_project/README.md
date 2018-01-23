@@ -51,6 +51,8 @@ Then we used a Support Vector Machine as our classifier, and trained this model 
 
 ![Object Recognition](./writeup_files/ex_3_steps_implemented_objects_2.png)
 
+![Normalzied Confusion Matrix](./writeup_files/confusion_matrix.png)
+
 ### Pick and Place Setup
 
 #### 1. For all three tabletop setups (`test*.world`), perform object recognition, then read in respective pick list (`pick_list_*.yaml`). Next construct the messages that would comprise a valid `PickPlace` request output them to `.yaml` format.
