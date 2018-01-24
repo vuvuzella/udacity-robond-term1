@@ -45,13 +45,15 @@ For clustering and object segmentation, the DBSCAN algorithm was used. Using PCL
 
 For Object recognition, we used extracted features from different objects used in the project. We retrieved Hue, Saturation and Value histograms as well as the normal (normal vector to the plane/surface) to create the object's feature, labeling them accordingly.
 
+The resulting confusion matrix of the feature extraction phase using 20 iterations of randomized positions and hue, saturation and value and normals histogram capturing:
+
+![Normalzied Confusion Matrix](./writeup_files/confusion_matrix.png)
+
 Then we used a Support Vector Machine as our classifier, and trained this model using the features we generated. This SVM was used to recognize the objects in the test worlds
 
 ![Object Recognition](./writeup_files/ex_3_steps_implemented_objects_1.png)
 
 ![Object Recognition](./writeup_files/ex_3_steps_implemented_objects_2.png)
-
-![Normalzied Confusion Matrix](./writeup_files/confusion_matrix.png)
 
 ### Pick and Place Setup
 
