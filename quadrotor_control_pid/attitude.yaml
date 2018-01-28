@@ -1,0 +1,47 @@
+!!python/object/new:dynamic_reconfigure.encoding.Config
+dictitems:
+  groups: !!python/object/new:dynamic_reconfigure.encoding.Config
+    dictitems:
+      groups: !!python/object/new:dynamic_reconfigure.encoding.Config
+        state: []
+      id: 0
+      name: Default
+      parameters: !!python/object/new:dynamic_reconfigure.encoding.Config
+        state: []
+      parent: 0
+      pitch_kd: 6.0
+      pitch_ki: 6.0
+      pitch_ki_max: 2.0
+      pitch_kp: 10.0
+      pitch_set_point: 0.0
+      roll_kd: 6.0
+      roll_ki: 5.0
+      roll_ki_max: 2.0
+      roll_kp: 10.0
+      roll_set_point: 0.0
+      state: true
+      type: ''
+      use_dr_set_point: true
+      yaw_kd: 6.0
+      yaw_ki: 6.0
+      yaw_ki_max: 2.0
+      yaw_kp: 10.0
+      yaw_set_point: 0.0
+    state: []
+  pitch_kd: 6.0
+  pitch_ki: 6.0
+  pitch_ki_max: 2.0
+  pitch_kp: 10.0
+  pitch_set_point: 0.0
+  roll_kd: 6.0
+  roll_ki: 5.0
+  roll_ki_max: 2.0
+  roll_kp: 10.0
+  roll_set_point: 0.0
+  use_dr_set_point: true
+  yaw_kd: 6.0
+  yaw_ki: 6.0
+  yaw_ki_max: 2.0
+  yaw_kp: 10.0
+  yaw_set_point: 0.0
+state: []
