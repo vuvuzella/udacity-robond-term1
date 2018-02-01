@@ -6,3 +6,4 @@ devel
 build
 .catkin_workspace
 datasets
+*.gz
