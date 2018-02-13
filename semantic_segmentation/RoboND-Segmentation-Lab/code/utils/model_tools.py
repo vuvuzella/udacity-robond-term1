@@ -29,7 +29,8 @@
 
 import os
 import json
-from tensorflow.contrib.keras.python import keras 
+# from tensorflow.contrib.keras.python import keras 
+from tensorflow.python import keras 
 from scipy import misc
 from . import data_iterator
 import numpy as np
