@@ -118,17 +118,20 @@ The Final IoU score is calculated as Final IoU divided by normalized true positi
 Some pictures of Hero detection:
 
 1. Following target
-![Following target](./writeup_files/eval_following_target.png)
+
+   ![Following target](./writeup_files/eval_following_target.png)
 
 2. Patrol without target
-![Patrol without target](./writeup_files/patrol_no_target.png)
+
+   ![Patrol without target](./writeup_files/patrol_no_target.png)
 
 3. Patrol with target
-![Patrol without target](./writeup_files/patrol_with_target.png)
+
+   ![Patrol without target](./writeup_files/patrol_with_target.png)
 
 4. Video
 
-      [![Follow Me Project](http://img.youtube.com/vi/6RUyYfu2jHU/0.jpg)](https://www.youtube.com/watch?v=6RUyYfu2jHU)
+   [![Follow Me Project](http://img.youtube.com/vi/6RUyYfu2jHU/0.jpg)](https://www.youtube.com/watch?v=6RUyYfu2jHU)
 
 ### Limitations
 1. The data that were provided were limited to the people and the surroundings, and 
