@@ -26,7 +26,7 @@ which is `final_grade_score` at the bottom of your notebook
 
 ## Writeup / README
 
-### Network Architecture
+## Network Architecture
  - A Fully Convolutional Network architecture was used 
  to train the model.
 
@@ -39,8 +39,24 @@ which is `final_grade_score` at the bottom of your notebook
 
  The following describes the layers of the network:
 
-   1. Layers
-      - Encoder - 4 Encoder blocks that consist of a separable convolution
+   1. **Layers**
+
+      - **Encoder Block**
+        - Separable Convolution Layer
+
+      - **1x1 Convolution Layer**
+        - 
+
+      - **Decoder Block**
+        - Bilinear Upsampling
+        - Skip Connections
+        - Separable Convolution of a specific kernel size 
+
+      - **Fully Connected Network**
+
+   2. **Architecture**
+
+      - Encoder blocks - 4 Encoder blocks that consist of a separable convolution
        layer with bath normalization applied.
       The first encoder block has a depth of 16. The second block has 32.
       The third block has 64 and the 4th block has 128. Each block has 
@@ -50,6 +66,9 @@ which is `final_grade_score` at the bottom of your notebook
 
       - 1x1 Convolution - 1 convolution block with a filter size of 1, 
       stride of 1 and a depth of 256. 
+        - Suffer less from overfitting because of the size of the 
+        kernel (1x1)
+        -  
        
       - Decoder - 4 Decoder blocks. Each Decoder block has an upsampling function 
       that upscales the output from the previous layers. The upsampling
@@ -72,9 +91,11 @@ which is `final_grade_score` at the bottom of your notebook
 
 Here is a graph of the network architecture:
 ![Network](./RoboND-DeepLearning-Project/code/model.png)
+
+   3. **Reasons for encoding/decoding images, when it should be used, why it's useful, and any problems that may arise.** 
     
 
-### Hyper Parameter Tuning
+## Hyper Parameter Tuning
 
   1. Epoch
      - The starting epoch was 10 just to see how the learning rate and the 
@@ -106,7 +127,7 @@ Here is a graph of the network architecture:
      - The number of threads that were allocated for training was left at 
      default value of 2.
 
-### Result
+## Result
 
 1. Intersection over Union is used to measure the performance of the trained model.
 The Final IoU score is calculated as Final IoU divided by normalized true positive.
@@ -133,12 +154,16 @@ Some pictures of Hero detection:
 
    [![Follow Me Project](http://img.youtube.com/vi/6RUyYfu2jHU/0.jpg)](https://www.youtube.com/watch?v=6RUyYfu2jHU)
 
-### Limitations
+## Limitations
 1. The data that were provided were limited to the people and the surroundings, and 
  a specific hero.
  If new elements in the world needs to be segmented, then additional data with those
   new elements in them must as well be added to the training and validation data.
 
 2. The automation of creating validation data for new objects are crucial to keep this specific workflow. Otherwise, the new data has to be labeled manually.
+
+## Future Enchancements
+
+1. 
 
 
